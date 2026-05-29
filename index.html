@@ -5,17 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
   <title>APATSA Cooperatives | Dashboard</title>
   <!-- Chart.js 4.4.1 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js">
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0b1a2b;
       background: linear-gradient(145deg, #0a1625 0%, #0f2136 100%);
       font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
       padding: 1.5rem 1.5rem 3rem;
@@ -23,15 +16,8 @@
       line-height: 1.5;
       min-height: 100vh;
     }
-
-    .dashboard {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .header {
-      margin-bottom: 2rem;
-    }
+    .dashboard { max-width: 1400px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
     .header h1 {
       font-size: clamp(1.8rem, 4vw, 2.4rem);
       font-weight: 700;
@@ -59,7 +45,6 @@
       align-items: center;
       gap: 0.5rem;
     }
-
     .section-title {
       font-size: 0.8rem;
       text-transform: uppercase;
@@ -71,8 +56,6 @@
       padding-bottom: 0.4rem;
       display: inline-block;
     }
-
-    /* metric cards */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -80,8 +63,6 @@
       margin-bottom: 0.5rem;
     }
     .metric-card {
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(4px);
       background: #10273e;
       border: 1px solid rgba(201, 169, 75, 0.15);
       border-radius: 16px;
@@ -108,7 +89,6 @@
       font-size: 0.7rem;
       color: #8b9bb5;
     }
-
     .card {
       background: #10273e;
       border: 1px solid rgba(255,255,255,0.06);
@@ -129,14 +109,12 @@
       padding-left: 1rem;
       color: #ffffff;
     }
-
     .two-column {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1rem;
       margin-top: 0.8rem;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -157,10 +135,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.05);
       color: #d3dce9;
     }
-    tr:hover td {
-      background: rgba(255,255,255,0.03);
-    }
-
+    tr:hover td { background: rgba(255,255,255,0.03); }
     .badge {
       background: rgba(201, 169, 75, 0.18);
       color: #e6c468;
@@ -176,7 +151,6 @@
       color: #8896aa;
       border-color: #3a4a5c;
     }
-
     .bar-item {
       display: flex;
       align-items: center;
@@ -209,7 +183,6 @@
       min-width: 60px;
       text-align: right;
     }
-
     .vc-container {
       display: flex;
       flex-wrap: wrap;
@@ -225,7 +198,6 @@
       font-size: 0.8rem;
       font-weight: 500;
     }
-
     .legend {
       display: flex;
       gap: 1.5rem;
@@ -239,7 +211,6 @@
       border-radius: 3px;
       display: inline-block;
     }
-
     .donut-container {
       display: flex;
       align-items: center;
@@ -255,34 +226,23 @@
       font-size: 0.8rem;
       margin: 0.5rem 0;
     }
-
     .updated {
       text-align: right;
       color: #6a7b94;
       font-size: 0.7rem;
       margin-top: 2rem;
     }
-
     @media (max-width: 600px) {
-      body {
-        padding: 0.8rem;
-      }
-      .bar-label {
-        width: 80px;
-      }
+      body { padding: 0.8rem; }
+      .bar-label { width: 80px; }
     }
   </style>
 </head>
 <body>
 <div class="dashboard">
   <div class="header">
-    <h1>
-      APATSA Secondary Cooperatives
-      <span>Live</span>
-    </h1>
-    <div class="subtitle">
-      <span>📊 Performance dashboard · synced with Google Sheets</span>
-    </div>
+    <h1>APATSA Secondary Cooperatives <span>Live</span></h1>
+    <div class="subtitle"><span>📊 Performance dashboard · synced with Google Sheets</span></div>
   </div>
 
   <div class="section-title">📌 Overview</div>
@@ -291,9 +251,7 @@
   <div class="section-title">🌾 All unions at a glance</div>
   <div class="card">
     <div class="card-header">Union status & summary</div>
-    <div style="overflow-x: auto;">
-      <table id="unionTable"></table>
-    </div>
+    <div style="overflow-x: auto;"><table id="unionTable"></table></div>
   </div>
 
   <div class="section-title">🗺️ Land use</div>
@@ -345,9 +303,7 @@
       <span><span class="legend-dot" style="background:#2c5f8a;"></span> Youth</span>
       <span><span class="legend-dot" style="background:#b0c7da;"></span> Male / other</span>
     </div>
-    <div style="height:280px;" id="stackedContainer">
-      <canvas id="stackedChart"></canvas>
-    </div>
+    <div style="height:280px;" id="stackedContainer"><canvas id="stackedChart"></canvas></div>
   </div>
 
   <div class="updated" id="updatedLine"></div>
@@ -357,7 +313,6 @@
   (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
 
-    // ----- fallback data (used if fetch fails) -----
     const FALLBACK_DATA = [
       { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, G/nuts", membership:841, male:268, female:347, youth:261 },
       { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196 },
@@ -371,17 +326,14 @@
       { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 }
     ];
 
-    // ----- helpers -----
     const toNum = (val) => {
       if (val === null || val === undefined || val === '') return 0;
       let num = Number(String(val).replace(/[^0-9.-]/g, ''));
       return isNaN(num) ? 0 : num;
     };
-
     const fmt = (val) => typeof val === 'number' ? val.toLocaleString() : val;
     const pct = (part, total) => total > 0 ? Math.round((part / total) * 100) : 0;
 
-    // ----- CSV parser -----
     function parseCSV(text) {
       const rows = [];
       let row = [], field = '', inQuotes = false;
@@ -400,7 +352,6 @@
       return rows.filter(r => r.some(cell => cell !== ''));
     }
 
-    // ----- detect if a row is totals (based on keywords) -----
     function isTotalsRow(row, headers) {
       const nameIdx = headers.findIndex(h => /union|secondary|cooperative|name/i.test(h) && !/value|chain/i.test(h));
       if (nameIdx === -1) return false;
@@ -408,7 +359,6 @@
       return nameVal.includes('total') || nameVal === 'totals' || nameVal === 'overall';
     }
 
-    // ----- fetch & process live data -----
     async function fetchData() {
       try {
         const response = await fetch(CSV_URL, { cache: 'no-store' });
@@ -420,7 +370,7 @@
 
         const headers = rows[0].map(h => h.toLowerCase().trim());
         
-        // column mapping (flexible)
+        // 🔧 FIXED COLUMN MAPPING
         const colIndex = {
           name: headers.findIndex(h => /union|secondary|cooperative|name/i.test(h) && !/value|chain|list/i.test(h)),
           coops: headers.findIndex(h => /#.*coop|count.*coop|number.*coop|cooperatives/i.test(h)),
@@ -429,8 +379,15 @@
           largestCoop: headers.findIndex(h => /coop.*largest|largest.*coop/i.test(h)),
           smallestHect: headers.findIndex(h => /smallest.*hect|min.*hect/i.test(h)),
           smallestCoop: headers.findIndex(h => /coop.*smallest|smallest.*coop/i.test(h)),
-          // CRITICAL: look for "value chains list" not "total value chains"
-          valueChainsList: headers.findIndex(h => /value.*chain.*list|value.*chains(?!.*total)/i.test(h) || h.includes('value chain') && !h.includes('total')),
+          
+          // ✅ FIXED: Prioritize "Value Chains List", exclude any header with "total"
+          valueChainsList: headers.findIndex(h => {
+            const lower = h.toLowerCase().trim();
+            if (/value\s*chain.*list|chain\s*list/i.test(lower)) return true;
+            if (lower.includes('value chain') && !lower.includes('total')) return true;
+            return false;
+          }),
+          
           membership: headers.findIndex(h => /total.*member|member.*total/i.test(h)),
           male: headers.findIndex(h => /^male$/i.test(h)),
           female: headers.findIndex(h => /^female$/i.test(h)),
@@ -445,13 +402,10 @@
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (row.length === 0) continue;
-          
-          // 🔥 SKIP TOTALS ROW (row 12 or any row containing "total")
           if (isTotalsRow(row, headers)) {
             console.log('Skipped totals row:', row[colIndex.name] || row[0]);
             continue;
           }
-
           const nameVal = (row[colIndex.name] || '').trim();
           if (!nameVal) continue;
 
@@ -469,7 +423,6 @@
             female: colIndex.female >= 0 ? toNum(row[colIndex.female]) : 0,
             youth: colIndex.youth >= 0 ? toNum(row[colIndex.youth]) : 0,
           };
-
           data.push(item);
           totalsAcc.coops += item.coops;
           totalsAcc.hectarage += item.hectarage;
@@ -478,7 +431,6 @@
           totalsAcc.female += item.female;
           totalsAcc.youth += item.youth;
         }
-
         data.sort((a,b) => b.coops - a.coops || a.name.localeCompare(b.name));
         return { data, totals: totalsAcc };
       } catch (err) {
@@ -495,14 +447,14 @@
       }
     }
 
-    // ----- extract unique value chains from the "Value Chains List" column -----
+    // ✅ FIXED: Handle comma AND semicolon delimiters + clean trailing punctuation
     function getUniqueValueChains(data) {
       const active = data.filter(r => r.coops > 0 && r.membership > 0);
       const chainSet = new Set();
       active.forEach(r => {
         if (r.valueChainsList && r.valueChainsList.trim()) {
-          r.valueChainsList.split(',').forEach(chain => {
-            const cleaned = chain.trim();
+          r.valueChainsList.split(/[,;]/).forEach(chain => {
+            const cleaned = chain.trim().replace(/[;,.]+$/, '');
             if (cleaned) chainSet.add(cleaned);
           });
         }
@@ -510,12 +462,10 @@
       return Array.from(chainSet).sort((a,b) => a.localeCompare(b));
     }
 
-    // ----- render entire dashboard -----
     function render(data, totals) {
       const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
       const enrolled = data.filter(r => r.coops > 0);
 
-      // TOP METRICS
       document.getElementById('topMetrics').innerHTML = [
         { label: 'Active unions', value: activeUnions.length, sub: 'with cooperatives & members' },
         { label: 'Total cooperatives', value: fmt(totals.coops), sub: 'across all unions' },
@@ -525,7 +475,6 @@
         { label: 'Youth %', value: pct(totals.youth, totals.membership)+'%', sub: fmt(totals.youth)+' members' }
       ].map(m => `<div class="metric-card"><div class="label">${m.label}</div><div class="value">${m.value}</div><div class="context">${m.sub}</div></div>`).join('');
 
-      // UNION TABLE
       const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','Status'].map(h => `<th>${h}</th>`).join('');
       const tableRows = data.map(r => {
         const status = (r.coops>0 && r.membership>0) ? '<span class="badge">Active</span>' : (r.coops>0 ? '<span class="badge" style="background:#2c4a5e;">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
@@ -543,7 +492,6 @@
       }).join('');
       document.getElementById('unionTable').innerHTML = `<thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody>`;
 
-      // HECTARAGE BARS
       const hectActive = activeUnions.filter(r => r.hectarage > 0);
       const maxHect = hectActive.length ? Math.max(...hectActive.map(r => r.hectarage)) : 1;
       document.getElementById('hectareBars').innerHTML = hectActive.length ? hectActive.map(r => `
@@ -553,7 +501,6 @@
           <div class="bar-value">${fmt(r.hectarage)} ha</div>
         </div>`).join('') : '<p style="color:#8896aa;">No land data available.</p>';
 
-      // LARGEST / SMALLEST
       if (activeUnions.length) {
         const sortedLarge = [...activeUnions].sort((a,b) => b.largestHect - a.largestHect);
         const sortedSmall = [...activeUnions].filter(r => r.smallestHect > 0).sort((a,b) => a.smallestHect - b.smallestHect);
@@ -574,7 +521,7 @@
         document.getElementById('largestSmallest').innerHTML = '<p style="color:#8896aa;">No cooperative details.</p>';
       }
 
-      // VALUE CHAINS (unique, from list column)
+      // VALUE CHAINS SECTION - NOW USING CORRECT COLUMN
       const uniqueChains = getUniqueValueChains(data);
       const vcContainer = document.getElementById('valueChainList');
       if (uniqueChains.length) {
@@ -585,7 +532,6 @@
         document.getElementById('vcNote').textContent = '';
       }
 
-      // MEMBERSHIP BARS
       const withMembers = enrolled.filter(r => r.membership > 0);
       const maxMem = withMembers.length ? Math.max(...withMembers.map(r => r.membership)) : 1;
       document.getElementById('membershipBars').innerHTML = withMembers.length ? withMembers.map(r => `
@@ -595,7 +541,6 @@
           <div class="bar-value">${fmt(r.membership)}</div>
         </div>`).join('') : '<p style="color:#8896aa;">No membership data.</p>';
 
-      // DONUT CHART
       if (window.donutInstance) window.donutInstance.destroy();
       if (totals.membership > 0) {
         const ctx = document.getElementById('donutChart').getContext('2d');
@@ -623,7 +568,6 @@
         { label: 'Male/other', color: '#b0c7da', val: totals.male }
       ].map(item => `<div style="display:flex; justify-content:space-between; margin:0.3rem 0;"><span><span style="background:${item.color}; width:10px; height:10px; display:inline-block; border-radius:2px;"></span> ${item.label}</span> <strong>${fmt(item.val)} (${pct(item.val, totals.membership)}%)</strong></div>`).join('');
 
-      // FEMALE / YOUTH BARS
       const withGender = withMembers.filter(r => r.female > 0 || r.youth > 0);
       document.getElementById('femaleBars').innerHTML = withGender.map(r => {
         const perc = pct(r.female, r.membership);
@@ -634,7 +578,6 @@
         return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:#2c5f8a;"></div></div><div class="bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:#8896aa;">No data.</p>';
 
-      // STACKED BAR
       if (window.stackedInstance) window.stackedInstance.destroy();
       if (withMembers.length) {
         const stackedCtx = document.getElementById('stackedChart').getContext('2d');
@@ -660,11 +603,9 @@
         });
         document.getElementById('stackedContainer').style.height = '280px';
       }
-
       document.getElementById('updatedLine').textContent = `Last updated: ${new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'})}`;
     }
 
-    // start
     window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('topMetrics').innerHTML = '<div class="metric-card" style="grid-column:span 6;text-align:center;">⏳ Loading data from Google Sheets...</div>';
       try {
