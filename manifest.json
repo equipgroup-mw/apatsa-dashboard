@@ -1,6 +1,6 @@
 {
   "name": "APATSA Cooperatives Dashboard",
-  "short_name": "APATSA Dashboard",
+  "short_name": "APATSA Data",
   "description": "Performance dashboard for APATSA Secondary Cooperatives",
   "start_url": "/apatsa-dashboard/index.html",
   "scope": "/apatsa-dashboard/",
