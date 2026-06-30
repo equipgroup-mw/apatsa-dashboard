@@ -5,8 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
   <title>APATSA Cooperatives | Dashboard</title>
   <link rel="icon" type="image/png" href="browser.png">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#080f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="APATSA Dashboard">
+  <link rel="apple-touch-icon" href="MAFECO_appLogo.png">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
   <!-- Chart.js 4.4.1 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -464,6 +476,22 @@
   </div>
   <div class="updated" id="updatedLine"></div>
 </div>
+
+<!-- PWA Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/apatsa-dashboard/sw.js', {
+        scope: '/apatsa-dashboard/'
+      }).then(registration => {
+        console.log('ServiceWorker registered with scope:', registration.scope);
+      }).catch(err => {
+        console.log('ServiceWorker registration failed:', err);
+      });
+    });
+  }
+</script>
+
 <script>
   (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
