@@ -328,20 +328,28 @@
     
     .gender-breakdown-wrapper {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1.5rem;
+      gap: 1.2rem;
       width: 100%;
     }
     .donut-canvas-wrapper {
       position: relative;
-      width: 100%;
-      height: min(40vh, 320px);
+      width: min(100%, 280px);
+      aspect-ratio: 1 / 1;
+      height: auto;
+      margin: 0 auto;
+      flex-shrink: 0;
     }
-    /* Wide view (tablet/desktop/pc): donut spans full width but stays capped to viewport height
+    /* Wide view (tablet/desktop/pc): donut spans full width and stays capped to viewport height
        so the card, title and header all fit on screen together */
     @media (min-width: 768px) {
-      .donut-canvas-wrapper { height: min(48vh, 480px); }
+      .donut-canvas-wrapper {
+        width: 100%;
+        aspect-ratio: auto;
+        height: min(48vh, 480px);
+      }
       .gender-breakdown-wrapper { flex-direction: column; }
       .donut-legend-compact { width: 100%; max-width: 480px; }
     }
@@ -349,20 +357,24 @@
       font-size: 0.85rem;
       padding-top: 0.5rem;
       flex: 1;
+      min-width: 0;
     }
     .donut-legend-compact div {
       margin: 0.4rem 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.5rem;
       padding: 0.4rem 0;
       border-bottom: 1px solid rgba(255,255,255,0.03);
+      flex-wrap: wrap;
     }
     .legend-dot {
       width: 10px;
       height: 10px;
       border-radius: 3px;
       display: inline-block;
+      flex-shrink: 0;
     }
     /* Animations */
     @keyframes fadeInDown {
@@ -742,6 +754,17 @@
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false,
+              axis: 'y'
+            },
+            datasets: {
+              bar: {
+                barPercentage: 0.85,
+                categoryPercentage: 0.9
+              }
+            },
             scales: {
               x: { 
                 stacked: true, 
@@ -759,8 +782,6 @@
             plugins: { 
               legend: { display: false },
               tooltip: {
-                mode: 'index',
-                intersect: false,
                 backgroundColor: '#111e30',
                 titleColor: '#a8935a',
                 bodyColor: '#d3dce9',
