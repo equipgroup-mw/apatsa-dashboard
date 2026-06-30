@@ -5,7 +5,7 @@
   "start_url": "/apatsa-dashboard/index.html",
   "scope": "/apatsa-dashboard/",
   "display": "standalone",
-  "background_color": "#080f1a",
+  "background_color": "#ffffff",
   "theme_color": "#080f1a",
   "orientation": "any",
   "icons": [
