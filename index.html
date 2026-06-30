@@ -646,14 +646,14 @@
         const smallest = sortedSmall.length ? sortedSmall[0] : sortedLarge[sortedLarge.length-1];
         document.getElementById('largestSmallest').innerHTML = `
           <div style="background:linear-gradient(145deg, #14293e 0%, #0f2030 100%); padding:1.2rem; border-radius:14px; border:1px solid rgba(168,147,90,0.1);">
-            <div style="font-size:0.7rem; color:#a8935a; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">🔝 Largest Cooperative</div>
-            <div style="font-weight:700; color:white;">${largest.largestCoop || '—'}</div>
-            <div style="font-size:0.8rem; color:#8b9bb5;">${largest.name} · ${fmt(largest.largestHect)} ha</div>
+            <div style="font-size:0.7rem; color:#a8935a; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">⬆️ Largest Cooperative</div>
+            <div style="font-weight:700; color:white;">—</div>
+            <div style="font-size:0.8rem; color:#8b9bb5;">${largest.name}${largest.largestCoop ? `, '${largest.largestCoop}'` : ''} · ${fmt(largest.largestHect)} ha</div>
           </div>
           <div style="background:linear-gradient(145deg, #14293e 0%, #0f2030 100%); padding:1.2rem; border-radius:14px; border:1px solid rgba(255,255,255,0.04);">
-            <div style="font-size:0.7rem; color:#8b9bb5; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">🔻 Smallest Cooperative</div>
-            <div style="font-weight:700; color:white;">${smallest.smallestCoop || '—'}</div>
-            <div style="font-size:0.8rem; color:#8b9bb5;">${smallest.name} · ${fmt(smallest.smallestHect)} ha</div>
+            <div style="font-size:0.7rem; color:#8b9bb5; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">⬇️ Smallest Cooperative</div>
+            <div style="font-weight:700; color:white;">—</div>
+            <div style="font-size:0.8rem; color:#8b9bb5;">${smallest.name}${smallest.smallestCoop ? `, '${smallest.smallestCoop}'` : ''} · ${fmt(smallest.smallestHect)} ha</div>
           </div>`;
       } else {
         document.getElementById('largestSmallest').innerHTML = '<p style="color:#5e7089;">No cooperative details.</p>';
