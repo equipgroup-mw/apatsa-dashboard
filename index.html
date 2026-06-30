@@ -10,7 +10,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: linear-gradient(145deg, #0a1625 0%, #0f2136 100%);
+      background: #080f1a;
       font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
       padding: 1.5rem 1.5rem 3rem;
       color: #f0f2f5;
@@ -18,45 +18,53 @@
       min-height: 100vh;
     }
     .dashboard { max-width: 1400px; margin: 0 auto; }
-    .header { margin-bottom: 2rem; }
+    
+    .header { margin-bottom: 2.5rem; animation: fadeInDown 0.6s ease-out; }
     .header h1 {
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
-      font-weight: 700;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
       letter-spacing: -0.5px;
       color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
     }
     .header h1 span {
-      background: #c9a94b;
-      color: #0b1a2b;
-      font-size: 0.9rem;
-      padding: 0.2rem 1rem;
+      background: #a8935a;
+      color: #0d2136;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.9rem;
       border-radius: 30px;
-      letter-spacing: 0.3px;
-      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(168, 147, 90, 0.4);
     }
     .subtitle {
-      color: #b9c7dd;
-      font-size: 1rem;
-      margin-top: 0.3rem;
+      color: #8b9bb5;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      font-weight: 700;
+      color: #a8935a;
+      margin: 2.5rem 0 1rem;
+      padding-left: 0.5rem;
+      border-left: 3px solid #a8935a;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    .section-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-weight: 700;
-      color: #c9a94b;
-      margin: 2rem 0 0.8rem;
-      border-bottom: 2px solid rgba(201, 169, 75, 0.25);
-      padding-bottom: 0.4rem;
-      display: inline-block;
-    }
+    
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -64,52 +72,95 @@
       margin-bottom: 0.5rem;
     }
     .metric-card {
-      background: #10273e;
-      border: 1px solid rgba(201, 169, 75, 0.15);
+      background: linear-gradient(145deg, #111e30 0%, #0d1925 100%);
+      border: 1px solid rgba(168, 147, 90, 0.1);
       border-radius: 16px;
-      padding: 1.2rem 1rem;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.3);
-      transition: all 0.2s;
-      border-left: 4px solid #c9a94b;
+      padding: 1.4rem 1.2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: #a8935a;
+      border-radius: 0 4px 4px 0;
+    }
+    .metric-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(168, 147, 90, 0.3);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px rgba(168, 147, 90, 0.05);
     }
     .metric-card .label {
       font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #b9c7dd;
+      letter-spacing: 1.5px;
+      color: #8b9bb5;
       font-weight: 600;
+      margin-bottom: 0.4rem;
     }
     .metric-card .value {
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 2.2rem;
+      font-weight: 800;
       color: white;
-      line-height: 1.2;
+      line-height: 1.1;
       margin: 0.2rem 0;
     }
     .metric-card .context {
-      font-size: 0.7rem;
-      color: #8b9bb5;
+      font-size: 0.75rem;
+      color: #5e7089;
+      font-weight: 500;
     }
+    
     .card {
-      background: #10273e;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
+      background: #0d1925;
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 20px;
+      padding: 1.8rem;
+      margin-top: 1rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      border-color: rgba(255,255,255,0.08);
+    }
+    
+    .card-small {
+      background: #0d1925;
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 20px;
       padding: 1.5rem;
       margin-top: 1rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      backdrop-filter: blur(2px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      backdrop-filter: blur(10px);
     }
+    
     .card-header {
       font-weight: 700;
       font-size: 1.1rem;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      border-left: 4px solid #c9a94b;
+      border-left: 4px solid #a8935a;
       padding-left: 1rem;
       color: #ffffff;
     }
+    .card-header-small {
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-left: 4px solid #a8935a;
+      padding-left: 1rem;
+      color: #ffffff;
+    }
+    
     .two-column {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -122,144 +173,216 @@
       gap: 1rem;
       margin-top: 0.8rem;
     }
-    .full-width {
-      grid-column: 1 / -1;
-      margin-top: 1rem;
-    }
+    
     table {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
     }
     th {
       text-align: left;
-      padding: 0.7rem 0.5rem;
-      color: #c9a94b;
-      font-weight: 700;
+      padding: 0.9rem 1rem;
+      color: #a8935a;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid #c9a94b;
-      background: rgba(201, 169, 75, 0.08);
+      letter-spacing: 1px;
+      font-size: 0.7rem;
+      border-bottom: 1px solid #a8935a;
+      background: rgba(168, 147, 90, 0.03);
     }
     td {
-      padding: 0.6rem 0.5rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
       color: #d3dce9;
+      transition: background 0.2s ease;
     }
-    tr:hover td { background: rgba(255,255,255,0.03); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(168, 147, 90, 0.03); }
+    
     .badge {
-      background: rgba(201, 169, 75, 0.18);
-      color: #e6c468;
-      padding: 0.2rem 0.7rem;
+      background: rgba(168, 147, 90, 0.1);
+      color: #a8935a;
+      padding: 0.3rem 0.9rem;
       border-radius: 20px;
       font-size: 0.7rem;
       font-weight: 700;
-      border: 1px solid #c9a94b;
-      display: inline-block;
+      border: 1px solid rgba(168, 147, 90, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #a8935a;
+      border-radius: 50%;
+    }
+    .badge-enrolled {
+      background: rgba(13, 33, 54, 0.4);
+      color: #7e93b3;
+      border-color: rgba(13, 33, 54, 0.6);
+    }
+    .badge-enrolled::before { background: #4a6f9e; }
     .badge-inactive {
-      background: rgba(255,255,255,0.05);
-      color: #8896aa;
-      border-color: #3a4a5c;
+      background: rgba(255,255,255,0.03);
+      color: #5e7089;
+      border-color: rgba(255,255,255,0.08);
     }
+    .badge-inactive::before { background: #5e7089; }
+    
     .bar-item {
       display: flex;
       align-items: center;
-      gap: 0.7rem;
-      margin: 0.5rem 0;
+      gap: 0.8rem;
+      margin: 0.6rem 0;
+      transition: transform 0.2s ease;
+    }
+    .bar-item:hover {
+      transform: translateX(4px);
     }
     .bar-label {
-      width: 120px;
+      width: 130px;
       font-weight: 600;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: #d3dce9;
     }
     .bar-track {
       flex: 1;
-      height: 8px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 10px;
+      height: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
     }
     .bar-fill {
       height: 100%;
-      border-radius: 10px;
-      background: #c9a94b;
-      width: 0%;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);
+      position: relative;
     }
     .bar-value {
       font-weight: 700;
-      font-size: 0.8rem;
-      min-width: 60px;
+      font-size: 0.9rem;
+      min-width: 70px;
       text-align: right;
+      color: #ffffff;
     }
+    
     .vc-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 0.6rem;
       margin-top: 0.5rem;
     }
     .vc-pill {
-      background: rgba(201, 169, 75, 0.12);
-      border: 1px solid #c9a94b;
-      color: #f0d78c;
-      padding: 0.3rem 1rem;
+      background: rgba(168, 147, 90, 0.08);
+      border: 1px solid rgba(168, 147, 90, 0.2);
+      color: #c8b582;
+      padding: 0.4rem 1.2rem;
       border-radius: 20px;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: default;
     }
-    .legend {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-      font-size: 0.8rem;
+    .vc-pill:hover {
+      background: rgba(168, 147, 90, 0.15);
+      border-color: rgba(168, 147, 90, 0.4);
+      transform: translateY(-1px);
     }
-    .legend-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-      display: inline-block;
-    }
+    
     .donut-container {
       display: flex;
       align-items: center;
-      gap: 2rem;
+      gap: 1.5rem;
       flex-wrap: wrap;
+      justify-content: center;
     }
+    
     .error-message {
-      background: rgba(201, 169, 75, 0.1);
-      border: 1px solid #c9a94b;
-      padding: 0.8rem;
-      border-radius: 10px;
+      background: rgba(230, 126, 34, 0.1);
+      border: 1px solid rgba(230, 126, 34, 0.3);
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
       color: #f0d78c;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       margin: 0.5rem 0;
     }
+    
     .updated {
       text-align: right;
-      color: #6a7b94;
-      font-size: 0.7rem;
-      margin-top: 2rem;
+      color: #3e4f63;
+      font-size: 0.75rem;
+      margin-top: 3rem;
+      font-weight: 500;
     }
-    .membership-bars-large {
-      min-height: 300px;
+    
+    .membership-bars-large { min-height: 300px; }
+    .membership-bars-large .bar-item { margin: 0.9rem 0; }
+    .membership-bars-large .bar-track { height: 24px; border-radius: 12px; }
+    .membership-bars-large .bar-fill { border-radius: 12px; }
+    
+    .gender-breakdown-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      width: 100%;
     }
-    .membership-bars-large .bar-item {
-      margin: 0.7rem 0;
+    .donut-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: min(40vh, 320px);
     }
-    .membership-bars-large .bar-track {
-      height: 20px;
-      border-radius: 12px;
+    /* Wide view (tablet/desktop/pc): donut spans full width but stays capped to viewport height
+       so the card, title and header all fit on screen together */
+    @media (min-width: 768px) {
+      .donut-canvas-wrapper { height: min(48vh, 480px); }
+      .gender-breakdown-wrapper { flex-direction: column; }
+      .donut-legend-compact { width: 100%; max-width: 480px; }
     }
-    .membership-bars-large .bar-fill {
-      border-radius: 12px;
+    .donut-legend-compact {
+      font-size: 0.85rem;
+      padding-top: 0.5rem;
+      flex: 1;
+    }
+    .donut-legend-compact div {
+      margin: 0.4rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    /* Animations */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
     }
     @media (max-width: 600px) {
-      body { padding: 0.8rem; }
-      .bar-label { width: 80px; }
-      .membership-bars-large .bar-track { height: 16px; }
+      body { padding: 1rem; }
+      .bar-label { width: 90px; font-size: 0.8rem; }
+      .membership-bars-large .bar-track { height: 18px; }
+      .metric-card .value { font-size: 1.8rem; }
     }
   </style>
 </head>
@@ -269,80 +392,69 @@
     <h1>APATSA Secondary Cooperatives <span>Live</span></h1>
     <div class="subtitle"><span>📊 Performance dashboard · synced with Google Sheets</span></div>
   </div>
-
   <div class="section-title">📌 Overview</div>
   <div class="metrics-grid" id="topMetrics"></div>
-
   <div class="section-title">🌾 All unions at a glance</div>
-  <div class="card">
+  <div class="card animate-in" style="animation-delay: 0.1s;">
     <div class="card-header">Union status & summary</div>
     <div style="overflow-x: auto;"><table id="unionTable"></table></div>
   </div>
-
   <div class="section-title">🗺️ Land use</div>
-  <div class="card">
+  <div class="card animate-in" style="animation-delay: 0.2s;">
     <div class="card-header">Hectarage by union</div>
     <div id="hectareBars"></div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.2rem;" id="largestSmallest"></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;" id="largestSmallest"></div>
   </div>
-
   <div class="section-title">🌱 Value chains</div>
-  <div class="card">
+  <div class="card animate-in" style="animation-delay: 0.3s;">
     <div class="card-header">Unique value chains across active unions</div>
     <div class="vc-container" id="valueChainList"></div>
-    <p style="font-size:0.7rem; color:#8896aa; margin-top:0.7rem;" id="vcNote"></p>
+    <p style="font-size:0.75rem; color:#5e7089; margin-top:0.8rem;" id="vcNote"></p>
   </div>
-
   <div class="section-title">👥 Membership</div>
-  <div class="card">
+  <div class="card animate-in" style="animation-delay: 0.4s;">
     <div class="card-header">Total membership by union</div>
     <div id="membershipBars" class="membership-bars-large"></div>
   </div>
-
-  <div class="section-title">Gender breakdown</div>
-  <div class="card">
-    <div class="card-header">Gender breakdown</div>
-    <div class="donut-container">
-      <canvas id="donutChart" width="200" height="200" aria-label="gender breakdown donut"></canvas>
-      <div id="donutLegend" style="flex:1;"></div>
+  <div class="section-title">🚺 Gender overview</div>
+  <div class="card-small animate-in" style="animation-delay: 0.5s;">
+    <div class="card-header-small">Overall breakdown</div>
+    <div class="gender-breakdown-wrapper">
+      <div class="donut-canvas-wrapper"><canvas id="donutChart" aria-label="gender breakdown donut"></canvas></div>
+      <div id="donutLegend" class="donut-legend-compact"></div>
     </div>
   </div>
-
   <div class="section-title">🚺🚹♿ Female, Youth & PLWD focus</div>
   <div class="three-column">
-    <div class="card">
+    <div class="card animate-in" style="animation-delay: 0.6s;">
       <div class="card-header">Female share per union</div>
       <div id="femaleBars"></div>
     </div>
-    <div class="card">
+    <div class="card animate-in" style="animation-delay: 0.7s;">
       <div class="card-header">Youth share per union</div>
       <div id="youthBars"></div>
     </div>
-    <div class="card">
+    <div class="card animate-in" style="animation-delay: 0.8s;">
       <div class="card-header">PLWD share per union</div>
       <div id="plwdBars"></div>
     </div>
   </div>
-
-  <div class="section-title">📊 Gender & PLWD breakdown</div>
-  <div class="card">
+  <div class="section-title">📊 Composition breakdown</div>
+  <div class="card animate-in" style="animation-delay: 0.9s;">
     <div class="card-header">Stacked per union</div>
-    <div class="legend">
-      <span><span class="legend-dot" style="background:#c9a94b;"></span> Female</span>
-      <span><span class="legend-dot" style="background:#2c5f8a;"></span> Youth</span>
-      <span><span class="legend-dot" style="background:#b0c7da;"></span> Male</span>
-      <span><span class="legend-dot" style="background:#e67e22;"></span> PLWD</span>
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.8rem;">
+      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#0d2136;"></span> Female</span>
+      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#a8935a;"></span> Youth</span>
+      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#d8d0c6;"></span> Male</span>
+      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#7e2138;"></span> PLWD</span>
     </div>
-    <div style="height:280px;" id="stackedContainer"><canvas id="stackedChart"></canvas></div>
+    <div id="stackedContainer" style="height:420px;"><canvas id="stackedChart"></canvas></div>
   </div>
-
   <div class="updated" id="updatedLine"></div>
 </div>
-
 <script>
   (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
-
     const FALLBACK_DATA = [
       { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, G/nuts", membership:841, male:268, female:347, youth:261, plwd:25 },
       { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196, plwd:15 },
@@ -355,7 +467,6 @@
       { name:"Dikirani 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 }
     ];
-
     const toNum = (val) => {
       if (val === null || val === undefined || val === '') return 0;
       let num = Number(String(val).replace(/[^0-9.-]/g, ''));
@@ -363,7 +474,6 @@
     };
     const fmt = (val) => typeof val === 'number' ? val.toLocaleString() : val;
     const pct = (part, total) => total > 0 ? Math.round((part / total) * 100) : 0;
-
     function parseCSV(text) {
       const rows = [];
       let row = [], field = '', inQuotes = false;
@@ -381,14 +491,12 @@
       if (field || row.length) { row.push(field.trim()); rows.push(row); }
       return rows.filter(r => r.some(cell => cell !== ''));
     }
-
     function isTotalsRow(row, headers) {
       const nameIdx = headers.findIndex(h => /union|secondary|cooperative|name/i.test(h) && !/value|chain/i.test(h));
       if (nameIdx === -1) return false;
       const nameVal = (row[nameIdx] || '').trim().toLowerCase();
       return nameVal.includes('total') || nameVal === 'totals' || nameVal === 'overall';
     }
-
     async function fetchData() {
       try {
         const response = await fetch(CSV_URL, { cache: 'no-store' });
@@ -397,7 +505,6 @@
         if (!csvText.trim()) throw new Error('Empty CSV');
         const rows = parseCSV(csvText);
         if (rows.length < 2) throw new Error('No data rows');
-
         const headers = rows[0].map(h => h.toLowerCase().trim());
         
         const colIndex = {
@@ -408,36 +515,27 @@
           largestCoop: headers.findIndex(h => /coop.*largest|largest.*coop/i.test(h)),
           smallestHect: headers.findIndex(h => /smallest.*hect|min.*hect/i.test(h)),
           smallestCoop: headers.findIndex(h => /coop.*smallest|smallest.*coop/i.test(h)),
-          
           valueChainsList: headers.findIndex(h => {
             const lower = h.toLowerCase().trim();
             if (/value\s*chain.*list|chain\s*list/i.test(lower)) return true;
             if (lower.includes('value chain') && !lower.includes('total')) return true;
             return false;
           }),
-          
           membership: headers.findIndex(h => /total.*member|member.*total/i.test(h)),
           male: headers.findIndex(h => /^male$/i.test(h)),
           female: headers.findIndex(h => /^female$/i.test(h)),
           youth: headers.findIndex(h => /^youth$/i.test(h)),
           plwd: headers.findIndex(h => /plwd|pwd|disab/i.test(h)),
         };
-
         if (colIndex.name === -1) throw new Error('Union name column missing');
-
         const data = [];
         const totalsAcc = { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0, plwd:0 };
-
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (row.length === 0) continue;
-          if (isTotalsRow(row, headers)) {
-            console.log('Skipped totals row:', row[colIndex.name] || row[0]);
-            continue;
-          }
+          if (isTotalsRow(row, headers)) continue;
           const nameVal = (row[colIndex.name] || '').trim();
           if (!nameVal) continue;
-
           const item = {
             name: nameVal,
             coops: colIndex.coops >= 0 ? toNum(row[colIndex.coops]) : 0,
@@ -478,7 +576,6 @@
         return { data: FALLBACK_DATA, totals: fallbackTotals };
       }
     }
-
     function getUniqueValueChains(data) {
       const active = data.filter(r => r.coops > 0 && r.membership > 0);
       const chainSet = new Set();
@@ -492,11 +589,9 @@
       });
       return Array.from(chainSet).sort((a,b) => a.localeCompare(b));
     }
-
     function render(data, totals) {
       const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
       const enrolled = data.filter(r => r.coops > 0);
-
       document.getElementById('topMetrics').innerHTML = [
         { label: 'Active unions', value: activeUnions.length, sub: 'with cooperatives & members' },
         { label: 'Total cooperatives', value: fmt(totals.coops), sub: 'across all unions' },
@@ -505,14 +600,13 @@
         { label: 'Female %', value: pct(totals.female, totals.membership)+'%', sub: fmt(totals.female)+' members' },
         { label: 'Youth %', value: pct(totals.youth, totals.membership)+'%', sub: fmt(totals.youth)+' members' },
         { label: 'PLWD %', value: pct(totals.plwd, totals.membership)+'%', sub: fmt(totals.plwd)+' members' }
-      ].map(m => `<div class="metric-card"><div class="label">${m.label}</div><div class="value">${m.value}</div><div class="context">${m.sub}</div></div>`).join('');
-
+      ].map((m, i) => `<div class="metric-card animate-in" style="animation-delay: ${i * 0.05}s;"><div class="label">${m.label}</div><div class="value">${m.value}</div><div class="context">${m.sub}</div></div>`).join('');
       const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','PLWD','Status'].map(h => `<th>${h}</th>`).join('');
       const tableRows = data.map(r => {
-        const status = (r.coops>0 && r.membership>0) ? '<span class="badge">Active</span>' : (r.coops>0 ? '<span class="badge" style="background:#2c4a5e;">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
-        const femDisplay = r.membership>0 ? `${fmt(r.female)} <small style="color:#c9a94b;">(${pct(r.female,r.membership)}%)</small>` : '—';
-        const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:#7b9bcb;">(${pct(r.youth,r.membership)}%)</small>` : '—';
-        const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:#e67e22;">(${pct(r.plwd,r.membership)}%)</small>` : '—';
+        const status = (r.coops>0 && r.membership>0) ? '<span class="badge">Active</span>' : (r.coops>0 ? '<span class="badge badge-enrolled">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
+        const femDisplay = r.membership>0 ? `${fmt(r.female)} <small style="color:#a8935a;">(${pct(r.female,r.membership)}%)</small>` : '—';
+        const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:#7e93b3;">(${pct(r.youth,r.membership)}%)</small>` : '—';
+        const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:#c0455e;">(${pct(r.plwd,r.membership)}%)</small>` : '—';
         return `<tr>
           <td style="font-weight:600;color:white;">${r.name}</td>
           <td>${r.coops || '—'}</td>
@@ -525,57 +619,51 @@
         </tr>`;
       }).join('');
       document.getElementById('unionTable').innerHTML = `<thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody>`;
-
-      const hectActive = activeUnions.filter(r => r.hectarage > 0);
+      const hectActive = activeUnions.filter(r => r.hectarage > 0).sort((a,b) => b.hectarage - a.hectarage);
       const maxHect = hectActive.length ? Math.max(...hectActive.map(r => r.hectarage)) : 1;
-      document.getElementById('hectareBars').innerHTML = hectActive.length ? hectActive.map(r => `
+      document.getElementById('hectareBars').innerHTML = hectActive.length ? hectActive.map((r) => `
         <div class="bar-item">
           <div class="bar-label">${r.name}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${(r.hectarage/maxHect)*100}%;"></div></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(r.hectarage/maxHect)*100}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div>
           <div class="bar-value">${fmt(r.hectarage)} ha</div>
-        </div>`).join('') : '<p style="color:#8896aa;">No land data available.</p>';
-
+        </div>`).join('') : '<p style="color:#5e7089;">No land data available.</p>';
       if (activeUnions.length) {
         const sortedLarge = [...activeUnions].sort((a,b) => b.largestHect - a.largestHect);
         const sortedSmall = [...activeUnions].filter(r => r.smallestHect > 0).sort((a,b) => a.smallestHect - b.smallestHect);
         const largest = sortedLarge[0];
         const smallest = sortedSmall.length ? sortedSmall[0] : sortedLarge[sortedLarge.length-1];
         document.getElementById('largestSmallest').innerHTML = `
-          <div style="background:#1a3349; padding:1rem; border-radius:12px;">
-            <div style="font-size:0.7rem; color:#c9a94b;">🔝 LARGEST COOPERATIVE</div>
-            <div style="font-weight:700;">${largest.largestCoop || '—'}</div>
-            <div style="font-size:0.8rem;">${largest.largestHect} ha · ${largest.name}</div>
+          <div style="background:linear-gradient(145deg, #14293e 0%, #0f2030 100%); padding:1.2rem; border-radius:14px; border:1px solid rgba(168,147,90,0.1);">
+            <div style="font-size:0.7rem; color:#a8935a; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">🔝 Largest Cooperative</div>
+            <div style="font-weight:700; color:white;">${largest.largestCoop || '—'}</div>
+            <div style="font-size:0.8rem; color:#8b9bb5;">${largest.name} · ${fmt(largest.largestHect)} ha</div>
           </div>
-          <div style="background:#1a3349; padding:1rem; border-radius:12px;">
-            <div style="font-size:0.7rem; color:#b9c7dd;">🔻 SMALLEST COOPERATIVE</div>
-            <div style="font-weight:700;">${smallest.smallestCoop || '—'}</div>
-            <div style="font-size:0.8rem;">${smallest.smallestHect} ha · ${smallest.name}</div>
+          <div style="background:linear-gradient(145deg, #14293e 0%, #0f2030 100%); padding:1.2rem; border-radius:14px; border:1px solid rgba(255,255,255,0.04);">
+            <div style="font-size:0.7rem; color:#8b9bb5; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">🔻 Smallest Cooperative</div>
+            <div style="font-weight:700; color:white;">${smallest.smallestCoop || '—'}</div>
+            <div style="font-size:0.8rem; color:#8b9bb5;">${smallest.name} · ${fmt(smallest.smallestHect)} ha</div>
           </div>`;
       } else {
-        document.getElementById('largestSmallest').innerHTML = '<p style="color:#8896aa;">No cooperative details.</p>';
+        document.getElementById('largestSmallest').innerHTML = '<p style="color:#5e7089;">No cooperative details.</p>';
       }
-
       const uniqueChains = getUniqueValueChains(data);
       const vcContainer = document.getElementById('valueChainList');
       if (uniqueChains.length) {
         vcContainer.innerHTML = uniqueChains.map(v => `<span class="vc-pill">${v}</span>`).join('');
         document.getElementById('vcNote').textContent = `Showing ${uniqueChains.length} unique value chains from active unions.`;
       } else {
-        vcContainer.innerHTML = '<span style="color:#8896aa;">No value chain data available.</span>';
+        vcContainer.innerHTML = '<span style="color:#5e7089;">No value chain data available.</span>';
         document.getElementById('vcNote').textContent = '';
       }
-
-      // Membership bars with larger size
-      const withMembers = enrolled.filter(r => r.membership > 0);
+      const withMembers = enrolled.filter(r => r.membership > 0).sort((a,b) => b.membership - a.membership);
       const maxMem = withMembers.length ? Math.max(...withMembers.map(r => r.membership)) : 1;
-      document.getElementById('membershipBars').innerHTML = withMembers.length ? withMembers.map(r => `
+      document.getElementById('membershipBars').innerHTML = withMembers.length ? withMembers.map((r) => `
         <div class="bar-item">
           <div class="bar-label">${r.name}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${(r.membership/maxMem)*100}%; background:#2c5f8a;"></div></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(r.membership/maxMem)*100}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div>
           <div class="bar-value">${fmt(r.membership)}</div>
-        </div>`).join('') : '<p style="color:#8896aa;">No membership data.</p>';
-
-      // Gender breakdown donut - only Male and Female
+        </div>`).join('') : '<p style="color:#5e7089;">No membership data.</p>';
+      // Gender breakdown donut — primary colors, large for wide views
       if (window.donutInstance) window.donutInstance.destroy();
       if (totals.membership > 0) {
         const ctx = document.getElementById('donutChart').getContext('2d');
@@ -585,72 +673,116 @@
             labels: ['Female', 'Male'],
             datasets: [{
               data: [totals.female, totals.male],
-              backgroundColor: ['#c9a94b', '#b0c7da'],
-              borderColor: '#0f2136',
-              borderWidth: 2
+              backgroundColor: ['#a8935a', '#0d2136'],
+              borderColor: '#0d1925',
+              borderWidth: 2,
+              hoverBorderColor: '#ffffff',
+              hoverBorderWidth: 2
             }]
           },
           options: {
             responsive: true,
-            maintainAspectRatio: true,
-            plugins: { legend: { display: false } }
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: { 
+              legend: { display: false },
+              tooltip: { 
+                backgroundColor: '#111e30',
+                titleColor: '#a8935a',
+                bodyColor: '#d3dce9',
+                borderColor: 'rgba(168,147,90,0.2)',
+                borderWidth: 1,
+                padding: 10,
+                bodyFont: { size: 12 },
+                titleFont: { size: 12 }
+              }
+            }
           }
         });
       }
       document.getElementById('donutLegend').innerHTML = [
-        { label: 'Female', color: '#c9a94b', val: totals.female },
-        { label: 'Male', color: '#b0c7da', val: totals.male }
-      ].map(item => `<div style="display:flex; justify-content:space-between; margin:0.3rem 0;"><span><span style="background:${item.color}; width:10px; height:10px; display:inline-block; border-radius:2px;"></span> ${item.label}</span> <strong>${fmt(item.val)} (${pct(item.val, totals.membership)}%)</strong></div>`).join('');
-
-      // Female, Youth, and PLWD share bars
+        { label: 'Female', color: '#a8935a', val: totals.female },
+        { label: 'Male', color: '#0d2136', val: totals.male }
+      ].map(item => `<div style="display:flex; justify-content:space-between;"><span style="display:flex; align-items:center; gap:0.5rem;"><span style="background:${item.color}; width:10px; height:10px; display:inline-block; border-radius:3px;"></span> ${item.label}</span> <strong style="color:white;">${fmt(item.val)} <small style="color:#8b9bb5;">(${pct(item.val, totals.membership)}%)</small></strong></div>`).join('');
       const withGender = withMembers.filter(r => r.female > 0 || r.youth > 0 || r.plwd > 0);
-      document.getElementById('femaleBars').innerHTML = withGender.map(r => {
+      document.getElementById('femaleBars').innerHTML = [...withGender].sort((a,b) => pct(b.female,b.membership) - pct(a.female,a.membership)).map((r) => {
         const perc = pct(r.female, r.membership);
-        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%;"></div></div><div class="bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:#8896aa;">No data.</p>';
+        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div><div class="bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:#5e7089;">No data.</p>';
       
-      document.getElementById('youthBars').innerHTML = withGender.map(r => {
+      document.getElementById('youthBars').innerHTML = [...withGender].sort((a,b) => pct(b.youth,b.membership) - pct(a.youth,a.membership)).map((r) => {
         const perc = pct(r.youth, r.membership);
-        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:#2c5f8a;"></div></div><div class="bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:#8896aa;">No data.</p>';
+        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div><div class="bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:#5e7089;">No data.</p>';
       
-      document.getElementById('plwdBars').innerHTML = withGender.map(r => {
+      document.getElementById('plwdBars').innerHTML = [...withGender].sort((a,b) => pct(b.plwd,b.membership) - pct(a.plwd,a.membership)).map((r) => {
         const perc = pct(r.plwd, r.membership);
-        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:#e67e22;"></div></div><div class="bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:#8896aa;">No data.</p>';
-
-      // Stacked chart with Male and PLWD separated
+        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #7e2138 0%, #a8425c 100%);"></div></div><div class="bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:#5e7089;">No data.</p>';
+      // Stacked chart — converted to horizontal stacked bar, combined tooltips, primary/secondary colors
       if (window.stackedInstance) window.stackedInstance.destroy();
       if (withMembers.length) {
+        // withMembers is already sorted descending by total membership
+        const stackedSorted = withMembers;
+        // Scale container height based on number of unions so horizontal bars stay readable
+        document.getElementById('stackedContainer').style.height = Math.max(320, stackedSorted.length * 60) + 'px';
         const stackedCtx = document.getElementById('stackedChart').getContext('2d');
         window.stackedInstance = new Chart(stackedCtx, {
           type: 'bar',
           data: {
-            labels: withMembers.map(r => r.name),
+            labels: stackedSorted.map(r => r.name),
             datasets: [
-              { label: 'Female', data: withMembers.map(r => r.female), backgroundColor: '#c9a94b' },
-              { label: 'Youth', data: withMembers.map(r => r.youth), backgroundColor: '#2c5f8a' },
-              { label: 'Male', data: withMembers.map(r => r.male), backgroundColor: '#b0c7da' },
-              { label: 'PLWD', data: withMembers.map(r => r.plwd), backgroundColor: '#e67e22' }
+              { label: 'Female', data: stackedSorted.map(r => r.female), backgroundColor: '#0d2136', borderRadius: 2 },
+              { label: 'Youth', data: stackedSorted.map(r => r.youth), backgroundColor: '#a8935a', borderRadius: 2 },
+              { label: 'Male', data: stackedSorted.map(r => r.male), backgroundColor: '#d8d0c6', borderRadius: 2 },
+              { label: 'PLWD', data: stackedSorted.map(r => r.plwd), backgroundColor: '#7e2138', borderRadius: 2 }
             ]
           },
           options: {
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: { stacked: true, ticks: { color: '#b9c7dd' } },
-              y: { stacked: true, ticks: { color: '#b9c7dd' } }
+              x: { 
+                stacked: true, 
+                ticks: { color: '#8b9bb5', font: { size: 11 } },
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                border: { color: 'rgba(255,255,255,0.05)' }
+              },
+              y: { 
+                stacked: true, 
+                ticks: { color: '#8b9bb5', font: { size: 11 } },
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                border: { color: 'rgba(255,255,255,0.05)' }
+              }
             },
-            plugins: { legend: { display: false } }
+            plugins: { 
+              legend: { display: false },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: '#111e30',
+                titleColor: '#a8935a',
+                bodyColor: '#d3dce9',
+                borderColor: 'rgba(168,147,90,0.2)',
+                borderWidth: 1,
+                padding: 12,
+                callbacks: {
+                  // Show every dataset's value for the hovered union in one combined tooltip
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.formattedValue}`;
+                  }
+                }
+              }
+            }
           }
         });
-        document.getElementById('stackedContainer').style.height = '280px';
       }
+      
       document.getElementById('updatedLine').textContent = `Last updated: ${new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'})}`;
     }
-
     window.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('topMetrics').innerHTML = '<div class="metric-card" style="grid-column:span 6;text-align:center;">⏳ Loading data from Google Sheets...</div>';
+      document.getElementById('topMetrics').innerHTML = '<div class="metric-card" style="grid-column:1/-1;text-align:center; padding:2rem;"><div style="color:#a8935a; font-weight:600;">⏳ Loading data from Google Sheets...</div></div>';
       try {
         const { data, totals } = await fetchData();
         render(data, totals);
