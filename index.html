@@ -722,8 +722,8 @@
       // Stacked chart — converted to horizontal stacked bar, combined tooltips, primary/secondary colors
       if (window.stackedInstance) window.stackedInstance.destroy();
       if (withMembers.length) {
-        // withMembers is already sorted descending by total membership
-        const stackedSorted = withMembers;
+        // Sort by the actual stacked total (female+youth+male+plwd) descending
+        const stackedSorted = [...withMembers].sort((a,b) => (b.female+b.youth+b.male+b.plwd) - (a.female+a.youth+a.male+a.plwd));
         // Scale container height based on number of unions so horizontal bars stay readable
         document.getElementById('stackedContainer').style.height = Math.max(320, stackedSorted.length * 60) + 'px';
         const stackedCtx = document.getElementById('stackedChart').getContext('2d');
