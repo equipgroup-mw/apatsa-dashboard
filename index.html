@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
   <title>APATSA Cooperatives | Dashboard</title>
+  <link rel="icon" type="image/png" href="browser.png">
   <!-- Chart.js 4.4.1 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
@@ -115,6 +116,16 @@
       gap: 1rem;
       margin-top: 0.8rem;
     }
+    .three-column {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 0.8rem;
+    }
+    .full-width {
+      grid-column: 1 / -1;
+      margin-top: 1rem;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -155,7 +166,7 @@
       display: flex;
       align-items: center;
       gap: 0.7rem;
-      margin: 0.7rem 0;
+      margin: 0.5rem 0;
     }
     .bar-label {
       width: 120px;
@@ -232,9 +243,23 @@
       font-size: 0.7rem;
       margin-top: 2rem;
     }
+    .membership-bars-large {
+      min-height: 300px;
+    }
+    .membership-bars-large .bar-item {
+      margin: 0.7rem 0;
+    }
+    .membership-bars-large .bar-track {
+      height: 20px;
+      border-radius: 12px;
+    }
+    .membership-bars-large .bar-fill {
+      border-radius: 12px;
+    }
     @media (max-width: 600px) {
       body { padding: 0.8rem; }
       .bar-label { width: 80px; }
+      .membership-bars-large .bar-track { height: 16px; }
     }
   </style>
 </head>
@@ -269,22 +294,22 @@
   </div>
 
   <div class="section-title">👥 Membership</div>
-  <div class="two-column">
-    <div class="card">
-      <div class="card-header">Total membership by union</div>
-      <div id="membershipBars"></div>
-    </div>
-    <div class="card">
-      <div class="card-header">Overall composition</div>
-      <div class="donut-container">
-        <canvas id="donutChart" width="160" height="160" aria-label="membership donut"></canvas>
-        <div id="donutLegend" style="flex:1;"></div>
-      </div>
+  <div class="card">
+    <div class="card-header">Total membership by union</div>
+    <div id="membershipBars" class="membership-bars-large"></div>
+  </div>
+
+  <div class="section-title">Gender breakdown</div>
+  <div class="card">
+    <div class="card-header">Gender breakdown</div>
+    <div class="donut-container">
+      <canvas id="donutChart" width="200" height="200" aria-label="gender breakdown donut"></canvas>
+      <div id="donutLegend" style="flex:1;"></div>
     </div>
   </div>
 
-  <div class="section-title">🚺🚹 Female & Youth focus</div>
-  <div class="two-column">
+  <div class="section-title">🚺🚹♿ Female, Youth & PLWD focus</div>
+  <div class="three-column">
     <div class="card">
       <div class="card-header">Female share per union</div>
       <div id="femaleBars"></div>
@@ -293,15 +318,20 @@
       <div class="card-header">Youth share per union</div>
       <div id="youthBars"></div>
     </div>
+    <div class="card">
+      <div class="card-header">PLWD share per union</div>
+      <div id="plwdBars"></div>
+    </div>
   </div>
 
-  <div class="section-title">📊 Gender & youth breakdown</div>
+  <div class="section-title">📊 Gender & PLWD breakdown</div>
   <div class="card">
     <div class="card-header">Stacked per union</div>
     <div class="legend">
       <span><span class="legend-dot" style="background:#c9a94b;"></span> Female</span>
       <span><span class="legend-dot" style="background:#2c5f8a;"></span> Youth</span>
-      <span><span class="legend-dot" style="background:#b0c7da;"></span> Male / other</span>
+      <span><span class="legend-dot" style="background:#b0c7da;"></span> Male</span>
+      <span><span class="legend-dot" style="background:#e67e22;"></span> PLWD</span>
     </div>
     <div style="height:280px;" id="stackedContainer"><canvas id="stackedChart"></canvas></div>
   </div>
@@ -314,16 +344,16 @@
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
 
     const FALLBACK_DATA = [
-      { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, G/nuts", membership:841, male:268, female:347, youth:261 },
-      { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196 },
-      { name:"Mwandama", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"Comsip 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"Comsip 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"Mzuzu Coffee", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"HIMACUL", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"Dikirani 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"Dikirani 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 },
-      { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0 }
+      { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, G/nuts", membership:841, male:268, female:347, youth:261, plwd:25 },
+      { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196, plwd:15 },
+      { name:"Mwandama", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"Comsip 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"Comsip 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"Mzuzu Coffee", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"HIMACUL", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"Dikirani 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"Dikirani 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
+      { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 }
     ];
 
     const toNum = (val) => {
@@ -370,7 +400,6 @@
 
         const headers = rows[0].map(h => h.toLowerCase().trim());
         
-        // 🔧 FIXED COLUMN MAPPING
         const colIndex = {
           name: headers.findIndex(h => /union|secondary|cooperative|name/i.test(h) && !/value|chain|list/i.test(h)),
           coops: headers.findIndex(h => /#.*coop|count.*coop|number.*coop|cooperatives/i.test(h)),
@@ -380,7 +409,6 @@
           smallestHect: headers.findIndex(h => /smallest.*hect|min.*hect/i.test(h)),
           smallestCoop: headers.findIndex(h => /coop.*smallest|smallest.*coop/i.test(h)),
           
-          // ✅ FIXED: Prioritize "Value Chains List", exclude any header with "total"
           valueChainsList: headers.findIndex(h => {
             const lower = h.toLowerCase().trim();
             if (/value\s*chain.*list|chain\s*list/i.test(lower)) return true;
@@ -392,12 +420,13 @@
           male: headers.findIndex(h => /^male$/i.test(h)),
           female: headers.findIndex(h => /^female$/i.test(h)),
           youth: headers.findIndex(h => /^youth$/i.test(h)),
+          plwd: headers.findIndex(h => /plwd|pwd|disab/i.test(h)),
         };
 
         if (colIndex.name === -1) throw new Error('Union name column missing');
 
         const data = [];
-        const totalsAcc = { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0 };
+        const totalsAcc = { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0, plwd:0 };
 
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
@@ -422,6 +451,7 @@
             male: colIndex.male >= 0 ? toNum(row[colIndex.male]) : 0,
             female: colIndex.female >= 0 ? toNum(row[colIndex.female]) : 0,
             youth: colIndex.youth >= 0 ? toNum(row[colIndex.youth]) : 0,
+            plwd: colIndex.plwd >= 0 ? toNum(row[colIndex.plwd]) : 0,
           };
           data.push(item);
           totalsAcc.coops += item.coops;
@@ -430,6 +460,7 @@
           totalsAcc.male += item.male;
           totalsAcc.female += item.female;
           totalsAcc.youth += item.youth;
+          totalsAcc.plwd += item.plwd;
         }
         data.sort((a,b) => b.coops - a.coops || a.name.localeCompare(b.name));
         return { data, totals: totalsAcc };
@@ -437,8 +468,9 @@
         console.warn('Fetch failed, using fallback:', err.message);
         const fallbackTotals = FALLBACK_DATA.reduce((acc, r) => {
           acc.coops += r.coops; acc.hectarage += r.hectarage; acc.membership += r.membership;
-          acc.male += r.male; acc.female += r.female; acc.youth += r.youth; return acc;
-        }, { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0 });
+          acc.male += r.male; acc.female += r.female; acc.youth += r.youth; 
+          acc.plwd += r.plwd || 0; return acc;
+        }, { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0, plwd:0 });
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
         errorDiv.innerHTML = `⚠️ Using offline fallback. Live sync error: ${err.message}`;
@@ -447,7 +479,6 @@
       }
     }
 
-    // ✅ FIXED: Handle comma AND semicolon delimiters + clean trailing punctuation
     function getUniqueValueChains(data) {
       const active = data.filter(r => r.coops > 0 && r.membership > 0);
       const chainSet = new Set();
@@ -472,14 +503,16 @@
         { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares in use' },
         { label: 'Total membership', value: fmt(totals.membership), sub: 'members' },
         { label: 'Female %', value: pct(totals.female, totals.membership)+'%', sub: fmt(totals.female)+' members' },
-        { label: 'Youth %', value: pct(totals.youth, totals.membership)+'%', sub: fmt(totals.youth)+' members' }
+        { label: 'Youth %', value: pct(totals.youth, totals.membership)+'%', sub: fmt(totals.youth)+' members' },
+        { label: 'PLWD %', value: pct(totals.plwd, totals.membership)+'%', sub: fmt(totals.plwd)+' members' }
       ].map(m => `<div class="metric-card"><div class="label">${m.label}</div><div class="value">${m.value}</div><div class="context">${m.sub}</div></div>`).join('');
 
-      const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','Status'].map(h => `<th>${h}</th>`).join('');
+      const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','PLWD','Status'].map(h => `<th>${h}</th>`).join('');
       const tableRows = data.map(r => {
         const status = (r.coops>0 && r.membership>0) ? '<span class="badge">Active</span>' : (r.coops>0 ? '<span class="badge" style="background:#2c4a5e;">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
         const femDisplay = r.membership>0 ? `${fmt(r.female)} <small style="color:#c9a94b;">(${pct(r.female,r.membership)}%)</small>` : '—';
         const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:#7b9bcb;">(${pct(r.youth,r.membership)}%)</small>` : '—';
+        const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:#e67e22;">(${pct(r.plwd,r.membership)}%)</small>` : '—';
         return `<tr>
           <td style="font-weight:600;color:white;">${r.name}</td>
           <td>${r.coops || '—'}</td>
@@ -487,6 +520,7 @@
           <td>${r.membership>0 ? fmt(r.membership) : '—'}</td>
           <td>${femDisplay}</td>
           <td>${youthDisplay}</td>
+          <td>${plwdDisplay}</td>
           <td>${status}</td>
         </tr>`;
       }).join('');
@@ -521,7 +555,6 @@
         document.getElementById('largestSmallest').innerHTML = '<p style="color:#8896aa;">No cooperative details.</p>';
       }
 
-      // VALUE CHAINS SECTION - NOW USING CORRECT COLUMN
       const uniqueChains = getUniqueValueChains(data);
       const vcContainer = document.getElementById('valueChainList');
       if (uniqueChains.length) {
@@ -532,6 +565,7 @@
         document.getElementById('vcNote').textContent = '';
       }
 
+      // Membership bars with larger size
       const withMembers = enrolled.filter(r => r.membership > 0);
       const maxMem = withMembers.length ? Math.max(...withMembers.map(r => r.membership)) : 1;
       document.getElementById('membershipBars').innerHTML = withMembers.length ? withMembers.map(r => `
@@ -541,16 +575,17 @@
           <div class="bar-value">${fmt(r.membership)}</div>
         </div>`).join('') : '<p style="color:#8896aa;">No membership data.</p>';
 
+      // Gender breakdown donut - only Male and Female
       if (window.donutInstance) window.donutInstance.destroy();
       if (totals.membership > 0) {
         const ctx = document.getElementById('donutChart').getContext('2d');
         window.donutInstance = new Chart(ctx, {
           type: 'doughnut',
           data: {
-            labels: ['Female', 'Youth', 'Male/other'],
+            labels: ['Female', 'Male'],
             datasets: [{
-              data: [totals.female, totals.youth, totals.male],
-              backgroundColor: ['#c9a94b', '#2c5f8a', '#b0c7da'],
+              data: [totals.female, totals.male],
+              backgroundColor: ['#c9a94b', '#b0c7da'],
               borderColor: '#0f2136',
               borderWidth: 2
             }]
@@ -564,20 +599,27 @@
       }
       document.getElementById('donutLegend').innerHTML = [
         { label: 'Female', color: '#c9a94b', val: totals.female },
-        { label: 'Youth', color: '#2c5f8a', val: totals.youth },
-        { label: 'Male/other', color: '#b0c7da', val: totals.male }
+        { label: 'Male', color: '#b0c7da', val: totals.male }
       ].map(item => `<div style="display:flex; justify-content:space-between; margin:0.3rem 0;"><span><span style="background:${item.color}; width:10px; height:10px; display:inline-block; border-radius:2px;"></span> ${item.label}</span> <strong>${fmt(item.val)} (${pct(item.val, totals.membership)}%)</strong></div>`).join('');
 
-      const withGender = withMembers.filter(r => r.female > 0 || r.youth > 0);
+      // Female, Youth, and PLWD share bars
+      const withGender = withMembers.filter(r => r.female > 0 || r.youth > 0 || r.plwd > 0);
       document.getElementById('femaleBars').innerHTML = withGender.map(r => {
         const perc = pct(r.female, r.membership);
         return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%;"></div></div><div class="bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:#8896aa;">No data.</p>';
+      
       document.getElementById('youthBars').innerHTML = withGender.map(r => {
         const perc = pct(r.youth, r.membership);
         return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:#2c5f8a;"></div></div><div class="bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:#8896aa;">No data.</p>';
+      
+      document.getElementById('plwdBars').innerHTML = withGender.map(r => {
+        const perc = pct(r.plwd, r.membership);
+        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background:#e67e22;"></div></div><div class="bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:#8896aa;">No data.</p>';
 
+      // Stacked chart with Male and PLWD separated
       if (window.stackedInstance) window.stackedInstance.destroy();
       if (withMembers.length) {
         const stackedCtx = document.getElementById('stackedChart').getContext('2d');
@@ -588,7 +630,8 @@
             datasets: [
               { label: 'Female', data: withMembers.map(r => r.female), backgroundColor: '#c9a94b' },
               { label: 'Youth', data: withMembers.map(r => r.youth), backgroundColor: '#2c5f8a' },
-              { label: 'Male', data: withMembers.map(r => r.male), backgroundColor: '#b0c7da' }
+              { label: 'Male', data: withMembers.map(r => r.male), backgroundColor: '#b0c7da' },
+              { label: 'PLWD', data: withMembers.map(r => r.plwd), backgroundColor: '#e67e22' }
             ]
           },
           options: {
