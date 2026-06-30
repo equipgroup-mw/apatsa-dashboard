@@ -468,15 +468,15 @@
   (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
     const FALLBACK_DATA = [
-      { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, G/nuts", membership:841, male:268, female:347, youth:261, plwd:25 },
-      { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196, plwd:15 },
+      { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, Groundnuts", membership:841, male:268, female:347, youth:261, plwd:0 },
+      { name:"Dikirani 1", coops:5, hectarage:633.6, largestHect:411.6, largestCoop:"Nabulenje", smallestHect:62, smallestCoop:"Lombwa", valueChainsList:"Soyabeans, Groundnuts, Sunflower, Maize", membership:719, male:217, female:302, youth:115, plwd:19 },
+      { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196, plwd:0 },
+      { name:"Dikirani 2", coops:4, hectarage:325, largestHect:250, largestCoop:"Mpesa", smallestHect:75, smallestCoop:"Kapheni", valueChainsList:"Soyabeans, Groundnuts, Sunflower", membership:206, male:37, female:122, youth:108, plwd:5 },
       { name:"Mwandama", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"Comsip 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"Comsip 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"Mzuzu Coffee", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"HIMACUL", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"Dikirani 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"Dikirani 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 }
     ];
     const toNum = (val) => {
@@ -524,9 +524,9 @@
           coops: headers.findIndex(h => /#.*coop|count.*coop|number.*coop|cooperatives/i.test(h)),
           hectarage: headers.findIndex(h => /total.*hect|hectare.*total|hectarage/i.test(h)),
           largestHect: headers.findIndex(h => /largest.*hect|max.*hect/i.test(h)),
-          largestCoop: headers.findIndex(h => /coop.*largest|largest.*coop/i.test(h)),
+          largestCoop: headers.findIndex(h => /co-?op.*largest|largest.*co-?op/i.test(h)),
           smallestHect: headers.findIndex(h => /smallest.*hect|min.*hect/i.test(h)),
-          smallestCoop: headers.findIndex(h => /coop.*smallest|smallest.*coop/i.test(h)),
+          smallestCoop: headers.findIndex(h => /co-?op.*smallest|smallest.*co-?op/i.test(h)),
           valueChainsList: headers.findIndex(h => {
             const lower = h.toLowerCase().trim();
             if (/value\s*chain.*list|chain\s*list/i.test(lower)) return true;
