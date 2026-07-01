@@ -11,7 +11,7 @@
   "icons": [
     {
       "src": "/apatsa-dashboard/MAFECO_appLogo.png",
-      "sizes": "192x192",
+      "sizes": "2000x2000",
       "type": "image/png",
       "purpose": "any maskable"
     },
