@@ -67,6 +67,12 @@
     .logo-icon {
       width:36px; height:36px; background:var(--gold); border-radius:8px;
       display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;
+      overflow: hidden; /* Ensure image stays inside rounded corners */
+    }
+    .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Makes the image cover the area neatly */
     }
     .logo-text h1 {
       font-family:'Playfair Display',serif; font-size:clamp(14px,3vw,19px);
@@ -305,7 +311,7 @@
 
 <header>
   <div class="logo-group">
-    <div class="logo-icon">📊</div>
+    <div class="logo-icon"><img src="MAFECO_appLogo.png" alt="APATSA Logo"></div>
     <div class="logo-text">
       <h1>APATSA Dashboard</h1>
       <span>Secondary Cooperatives</span>
