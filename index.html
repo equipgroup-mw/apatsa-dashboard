@@ -241,7 +241,7 @@
     .block-info-val { font-weight: 700; color: white; font-family: 'Playfair Display', serif; }
     .block-info-sub { font-size: 0.8rem; color: var(--sand); margin-top: 0.3rem; }
 
-    /* ── VC PILLS ── */
+    /* ── VC PILLS & LISTS ── */
     .vc-container { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
     .vc-pill {
       background: rgba(168, 147, 90, 0.08);
@@ -251,6 +251,14 @@
       font-size: 0.85rem; font-weight: 500; transition: all 0.2s ease;
     }
     .vc-pill:hover { background: rgba(168, 147, 90, 0.15); transform: translateY(-1px); }
+
+    .vc-union-row {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 12px 0; border-bottom: 1px solid var(--sand);
+    }
+    .vc-union-row:last-child { border-bottom: none; }
+    .vc-union-name { font-weight: 600; font-size: 13px; color: var(--navy); }
+    .vc-union-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
     .badge-gold  { background:rgba(168,147,90,.15); color:var(--gold-dim); }
@@ -376,12 +384,28 @@
 
   <div id="tab-value" class="tab-panel">
     <p class="section-title">Value Chains</p>
-    <p class="section-sub">Unique value chains across active unions</p>
-    <div class="chart-card">
-      <div class="chart-title">Value Chains</div>
-      <div class="chart-sub">Crops and products cultivated</div>
-      <div class="vc-container" id="valueChainList"></div>
-      <p style="font-size:0.75rem; color:var(--olive); margin-top:0.8rem;" id="vcNote"></p>
+    <p class="section-sub">Crops and products cultivated across active unions</p>
+    
+    <div class="kpi-grid" id="vcKpis"></div>
+
+    <div class="chart-grid cols-2">
+      <div class="chart-card">
+        <div class="chart-title">Value Chain Popularity</div>
+        <div class="chart-sub">Number of active unions cultivating each crop</div>
+        <div class="chart-wrap"><canvas id="vcPopularityChart"></canvas></div>
+      </div>
+      
+      <div class="chart-card dark">
+        <div class="chart-title">All Unique Value Chains</div>
+        <div class="chart-sub">Complete list of crops cultivated across the network</div>
+        <div class="vc-container" id="valueChainList"></div>
+      </div>
+
+      <div class="chart-card span-2">
+        <div class="chart-title">Value Chains by Union</div>
+        <div class="chart-sub">Detailed breakdown of crops cultivated per union</div>
+        <div id="vcUnionBreakdown"></div>
+      </div>
     </div>
   </div>
 
@@ -418,12 +442,12 @@
       </div>
       <div class="chart-card">
         <div class="chart-title">Youth Share Per Union</div>
-        <div class="chart-sub">Youth as % of total gender base</div>
+        <div class="chart-sub">Youth as % of total union membership</div>
         <div id="youthBars"></div>
       </div>
       <div class="chart-card dark">
         <div class="chart-title">PLWD Share Per Union</div>
-        <div class="chart-sub">PLWD as % of total gender base</div>
+        <div class="chart-sub">PLWD as % of total union membership</div>
         <div id="plwdBars"></div>
       </div>
     </div>
@@ -458,16 +482,16 @@
   (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
     const FALLBACK_DATA = [
-      { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, Groundnuts", membership:841, male:268, female:347, youth:261, plwd:0 },
-      { name:"Dikirani 1", coops:5, hectarage:633.6, largestHect:411.6, largestCoop:"Nabulenje", smallestHect:62, smallestCoop:"Lombwa", valueChainsList:"Soyabeans, Groundnuts, Sunflower, Maize", membership:719, male:217, female:302, youth:115, plwd:19 },
+      { name:"Nkhotakota Union", coops:7, hectarage:1341, largestHect:840, largestCoop:"Kasipa Cooperative", smallestHect:15, smallestCoop:"Mkaika Cooperative", valueChainsList:"Rice, Groundnuts, Maize, Rice", membership:841, male:268, female:347, youth:261, plwd:0 },
+      { name:"Dikirani 1", coops:5, hectarage:633.6, largestHect:411.6, largestCoop:"Nabulenje", smallestHect:62, smallestCoop:"Lombwa", valueChainsList:"Soyabeans, Groundnuts, Sunflower, Soyabeans, Groundnuts, Sunflower, Maize, Soyabeans, Groundnuts, Maize, Soyabeans, Sunflower, Groundnuts", membership:719, male:217, female:302, youth:115, plwd:19 },
       { name:"Salima Union", coops:4, hectarage:547.2, largestHect:222, largestCoop:"Jumabungus Cooperative", smallestHect:74, smallestCoop:"Senga Hills", valueChainsList:"Rice", membership:633, male:257, female:365, youth:196, plwd:0 },
-      { name:"Dikirani 2", coops:4, hectarage:325, largestHect:250, largestCoop:"Mpesa", smallestHect:75, smallestCoop:"Kapheni", valueChainsList:"Soyabeans, Groundnuts, Sunflower", membership:206, male:37, female:122, youth:108, plwd:5 },
-      { name:"Mwandama", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"Comsip 1", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"Comsip 2", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"Mzuzu Coffee", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"HIMACUL", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
-      { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 }
+      { name:"Dikirani 2", coops:4, hectarage:325, largestHect:250, largestCoop:"Mpesa", smallestHect:75, smallestCoop:"Kapheni", valueChainsList:"Soyabeans, Groundnuts, Soyabeans, Sunflower", membership:206, male:37, female:122, youth:108, plwd:5 },
+      { name:"Mwandama", coops:1, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"Maize, Soyabeans, Groundnuts, Pigeon Peas, Soyabeans, Maize, Maize, Soyabeans, Pigeon Peas, Soyabeans, Maize, Groundnuts, Pigeon Peas, Maize, Groundnuts, Soyabeans, Pigeon Peas, Soyabeans, Maize, Pigeon Peas, Livestock, Livestock, Soyabeans, Maize, Beans, Pigeon Peas", membership:150, male:80, female:70, youth:50, plwd:2 },
+      { name:"Comsip 1", coops:1, hectarage:10, largestHect:10, largestCoop:"Test", smallestHect:10, smallestCoop:"Test", valueChainsList:"Coffee", membership:50, male:30, female:20, youth:10, plwd:0 },
+      { name:"Comsip 2", coops:1, hectarage:15, largestHect:15, largestCoop:"Test 2", smallestHect:15, smallestCoop:"Test 2", valueChainsList:"Horticulture, Maize, Horticulture, Maize, Soyabeans, Horticulture, Groundnuts, Maize, Macademia, Kholowa, Sweet Potato, Maize, Macademia", membership:60, male:35, female:25, youth:15, plwd:1 },
+      { name:"Mzuzu Coffee", coops:1, hectarage:20, largestHect:20, largestCoop:"Mzuzu Test", smallestHect:20, smallestCoop:"Mzuzu Test", valueChainsList:"Coffee", membership:40, male:25, female:15, youth:10, plwd:0 },
+      { name:"HIMACUL", coops:1, hectarage:12, largestHect:12, largestCoop:"Him Test", smallestHect:12, smallestCoop:"Him Test", valueChainsList:"Rice, Rice, Maize, Groundnuts, Rice, Maize, Sweet Potato", membership:55, male:28, female:27, youth:12, plwd:1 },
+      { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"-", membership:0, male:0, female:0, youth:0, plwd:0 }
     ];
 
     const toNum = (val) => {
@@ -477,10 +501,12 @@
     };
     const fmt = (val) => typeof val === 'number' ? val.toLocaleString() : val;
     
-    // CORRECTED MATH: Gender totals exclude Youth/PLWD. Youth/PLWD % are calculated from Male+Female.
+    // Gender base is strictly Male + Female (for donut chart calculations)
     const totalGender = (r) => r.male + r.female;
-    const pctGender = (part, r) => totalGender(r) > 0 ? Math.round((part / totalGender(r)) * 100) : 0;
     const pctFemale = (r) => totalGender(r) > 0 ? Math.round((r.female / totalGender(r)) * 100) : 0;
+    
+    // Youth and PLWD % are calculated against TOTAL MEMBERSHIP
+    const pctMembership = (part, r) => r.membership > 0 ? Math.round((part / r.membership) * 100) : 0;
 
     function parseCSV(text) {
       const rows = [];
@@ -509,7 +535,6 @@
 
     async function fetchData() {
       try {
-        // Fixed cache buster appending with & instead of ? to avoid 400 errors
         const response = await fetch(CSV_URL + '&_cb=' + Date.now(), { cache: 'no-store' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const csvText = await response.text();
@@ -586,16 +611,22 @@
       }
     }
 
+    // Helper to extract unique chains from a raw list (ignoring hyphens/empty)
+    function extractUniqueChains(rawList) {
+      if (!rawList || rawList === '-') return [];
+      const chains = new Set();
+      rawList.split(/[,;]/).forEach(c => {
+        const clean = c.trim().replace(/[;,.]+$/, '');
+        if (clean && clean !== '-') chains.add(clean);
+      });
+      return Array.from(chains);
+    }
+
     function getUniqueValueChains(data) {
       const active = data.filter(r => r.coops > 0 && r.membership > 0);
       const chainSet = new Set();
       active.forEach(r => {
-        if (r.valueChainsList && r.valueChainsList.trim()) {
-          r.valueChainsList.split(/[,;]/).forEach(chain => {
-            const cleaned = chain.trim().replace(/[;,.]+$/, '');
-            if (cleaned) chainSet.add(cleaned);
-          });
-        }
+        extractUniqueChains(r.valueChainsList).forEach(c => chainSet.add(c));
       });
       return Array.from(chainSet).sort((a,b) => a.localeCompare(b));
     }
@@ -606,8 +637,8 @@
         const status = (r.coops>0 && r.membership>0) ? '<span class="badge badge-gold">Active</span>' : (r.coops>0 ? '<span class="badge badge-enrolled">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
         const tG = totalGender(r);
         const femDisplay = tG>0 ? `${fmt(r.female)} <small style="color:var(--gold-dim);">(${pctFemale(r)}%)</small>` : '—';
-        const youthDisplay = tG>0 ? `${fmt(r.youth)} <small style="color:var(--navy-lt);">(${pctGender(r.youth, r)}%)</small>` : '—';
-        const plwdDisplay = tG>0 ? `${fmt(r.plwd)} <small style="color:var(--plum-lt);">(${pctGender(r.plwd, r)}%)</small>` : '—';
+        const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:var(--navy-lt);">(${pctMembership(r.youth, r)}%)</small>` : '—';
+        const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:var(--plum-lt);">(${pctMembership(r.plwd, r)}%)</small>` : '—';
         return `<tr>
           <td style="font-weight:600;color:var(--navy);">${r.name}</td>
           <td>${r.coops || '—'}</td>
@@ -653,7 +684,93 @@
         legEl.innerHTML = [
           { label: 'Female', color: '#a8935a', val: totals.female },
           { label: 'Male', color: '#0d2136', val: totals.male }
-        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${pctGender(item.val, totals)}%)</small></span></div>`).join('');
+        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${pctFemale({male: totals.male, female: item.val})}%)</small></span></div>`).join('');
+      }
+    }
+
+    function renderValueChains(data) {
+      const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
+      const uniqueChains = getUniqueValueChains(data);
+      const vcContainer = document.getElementById('valueChainList');
+      const vcKpisEl = document.getElementById('vcKpis');
+      const vcUnionBreakdownEl = document.getElementById('vcUnionBreakdown');
+
+      // Accurately calculate union counts per chain
+      const chainCounts = {};
+      uniqueChains.forEach(c => chainCounts[c] = 0); // Initialize
+      
+      activeUnions.forEach(r => {
+        const unionChains = extractUniqueChains(r.valueChainsList);
+        unionChains.forEach(c => {
+          if (chainCounts[c] !== undefined) {
+            chainCounts[c]++;
+          }
+        });
+      });
+
+      // 1. KPI Cards
+      if (vcKpisEl) {
+        const mostCommon = Object.keys(chainCounts).length > 0 ? Object.keys(chainCounts).reduce((a, b) => chainCounts[a] > chainCounts[b] ? a : b) : '—';
+
+        vcKpisEl.innerHTML = `
+          <div class="kpi-card accent"><span class="icon">🌱</span><div class="value">${uniqueChains.length}</div><div class="label">Unique Value Chains</div><div class="sub">Across all active unions</div></div>
+          <div class="kpi-card"><span class="icon">🤝</span><div class="value">${activeUnions.length}</div><div class="label">Active Unions</div><div class="sub">Contributing to the network</div></div>
+          <div class="kpi-card"><span class="icon">🏆</span><div class="value" style="font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${mostCommon}</div><div class="label">Most Common Chain</div><div class="sub">Cultivated by ${mostCommon !== '—' ? chainCounts[mostCommon] : 0} unions</div></div>
+        `;
+      }
+
+      // 2. Popularity Chart
+      if (window.vcPopChart) window.vcPopChart.destroy();
+      const popularityCtx = document.getElementById('vcPopularityChart').getContext('2d');
+      const sortedChains = Object.keys(chainCounts).sort((a, b) => chainCounts[b] - chainCounts[a]);
+      
+      window.vcPopChart = new Chart(popularityCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedChains,
+          datasets: [{
+            label: 'Active Unions',
+            data: sortedChains.map(c => chainCounts[c]),
+            backgroundColor: '#a8935a',
+            borderRadius: 4,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, ticks: { color: '#7a7a7a', stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { ticks: { color: '#7a7a7a' }, grid: { display: false } }
+          }
+        }
+      });
+
+      // 3. All Chains Pill Cloud
+      if (vcContainer) {
+        if (uniqueChains.length) {
+          vcContainer.innerHTML = uniqueChains.map(v => `<span class="vc-pill">${v}</span>`).join('');
+        } else {
+          vcContainer.innerHTML = '<span style="color:var(--sand);">No value chain data available.</span>';
+        }
+      }
+
+      // 4. Union Breakdown List
+      if (vcUnionBreakdownEl) {
+        if (activeUnions.length === 0) {
+          vcUnionBreakdownEl.innerHTML = '<p style="color:var(--olive); text-align:center; padding:20px;">No active union data available.</p>';
+        } else {
+          vcUnionBreakdownEl.innerHTML = activeUnions.map(r => {
+            const chains = extractUniqueChains(r.valueChainsList);
+            const badges = chains.length > 0 ? chains.map(c => `<span class="badge badge-enrolled" style="font-size: 10px;">${c}</span>`).join('') : '<span style="font-size:11px; color:var(--olive); font-style:italic;">No chains listed</span>';
+            return `
+              <div class="vc-union-row">
+                <div class="vc-union-name">${r.name}</div>
+                <div class="vc-union-badges">${badges}</div>
+              </div>
+            `;
+          }).join('');
+        }
       }
     }
 
@@ -669,13 +786,16 @@
         { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares in use', icon: '🗺️' },
         { label: 'Total membership', value: fmt(totals.membership), sub: 'members', icon: '👥' },
         { label: 'Female %', value: pctFemale(totals)+'%', sub: fmt(totals.female)+' of '+fmt(tG)+' gender base', icon: '🚺' },
-        { label: 'Youth %', value: pctGender(totals.youth, totals)+'%', sub: fmt(totals.youth)+' of '+fmt(tG)+' gender base', icon: '🌱' },
-        { label: 'PLWD %', value: pctGender(totals.plwd, totals)+'%', sub: fmt(totals.plwd)+' of '+fmt(tG)+' gender base', icon: '♿' }
+        { label: 'Youth %', value: pctMembership(totals.youth, totals)+'%', sub: fmt(totals.youth)+' of '+fmt(totals.membership)+' members', icon: '🌱' },
+        { label: 'PLWD %', value: pctMembership(totals.plwd, totals)+'%', sub: fmt(totals.plwd)+' of '+fmt(totals.membership)+' members', icon: '♿' }
       ].map(m => `<div class="kpi-card ${m.accent ? 'accent' : ''}"><span class="icon">${m.icon}</span><div class="value">${m.value}</div><div class="label">${m.label}</div><div class="sub">${m.sub}</div></div>`).join('');
 
       // Tables
       renderTable(data, 'unionTable');
       renderTable(data, 'unionTable2');
+
+      // Value Chains Tab Rendering
+      renderValueChains(data);
 
       // Hectarage Bars
       const hectActive = activeUnions.filter(r => r.hectarage > 0).sort((a,b) => b.hectarage - a.hectarage);
@@ -706,16 +826,6 @@
           </div>`;
       }
 
-      // Value Chains
-      const uniqueChains = getUniqueValueChains(data);
-      const vcContainer = document.getElementById('valueChainList');
-      if (uniqueChains.length) {
-        vcContainer.innerHTML = uniqueChains.map(v => `<span class="vc-pill">${v}</span>`).join('');
-        document.getElementById('vcNote').textContent = `Showing ${uniqueChains.length} unique value chains from active unions.`;
-      } else {
-        vcContainer.innerHTML = '<span style="color:var(--olive);">No value chain data available.</span>';
-      }
-
       // Membership Bars
       const withMembers = enrolled.filter(r => r.membership > 0).sort((a,b) => b.membership - a.membership);
       const maxMem = withMembers.length ? Math.max(...withMembers.map(r => r.membership)) : 1;
@@ -738,13 +848,13 @@
         return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:var(--sand);">No data.</p>';
       
-      document.getElementById('youthBars').innerHTML = [...withGender].sort((a,b) => pctGender(b.youth,b) - pctGender(a.youth,a)).map(r => {
-        const perc = pctGender(r.youth, r);
+      document.getElementById('youthBars').innerHTML = [...withMembers].sort((a,b) => pctMembership(b.youth,b) - pctMembership(a.youth,a)).map(r => {
+        const perc = pctMembership(r.youth, r);
         return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:var(--olive);">No data.</p>';
       
-      document.getElementById('plwdBars').innerHTML = [...withGender].sort((a,b) => pctGender(b.plwd,b) - pctGender(a.plwd,a)).map(r => {
-        const perc = pctGender(r.plwd, r);
+      document.getElementById('plwdBars').innerHTML = [...withMembers].sort((a,b) => pctMembership(b.plwd,b) - pctMembership(a.plwd,a)).map(r => {
+        const perc = pctMembership(r.plwd, r);
         return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #7e2138 0%, #a8425c 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:var(--sand);">No data.</p>';
 
