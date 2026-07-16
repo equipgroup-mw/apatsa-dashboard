@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>APATSA Cooperatives | Dashboard</title>
+  
   <link rel="icon" type="image/png" href="browser.png">
   
   <!-- PWA Meta Tags -->
@@ -19,480 +20,428 @@
   <!-- Chart.js 4.4.1 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy:    #0d2136;
+      --gold:    #a8935a;
+      --cream:   #f4f2ef;
+      --sand:    #d8d0c6;
+      --olive:   #81845a;
+      --forest:  #2f3527;
+      --navy-lt: #152d47;
+      --navy-2:  #1a3352;
+      --gold-lt: #c4ac74;
+      --gold-dim:#7a6b41;
+      --blue-grey: #8a949e;
+      --light-grey: #d3d6d9;
+      --beige: #d8d0c6;
+      --soft-gold: #d6cab0;
+      --light-beige: #e6e1da;
+      --turquoise: #002937;
+      --turquoise-lt: #004551;
+      --plum: #512137;
+      --plum-lt: #7e2138;
+      --sat: env(safe-area-inset-top,    0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overscroll-behavior: none; }
     body {
-      background: #080f1a;
-      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-      padding: 1.5rem 1.5rem 3rem;
-      color: #f0f2f5;
-      line-height: 1.5;
-      min-height: 100vh;
+      background: var(--cream); color: var(--navy);
+      font-family: 'DM Sans', sans-serif; min-height: 100vh;
+      padding-top: var(--sat); padding-bottom: var(--sab);
     }
-    .dashboard { max-width: 1400px; margin: 0 auto; }
-    
-    .header { margin-bottom: 2.5rem; animation: fadeInDown 0.6s ease-out; }
-    .header h1 {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+
+    /* ── HEADER ───────────────────────────────────── */
+    header {
+      background: var(--navy); padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      border-bottom: 3px solid var(--gold);
+      position: sticky; top: 0; z-index: 100; min-height: 60px;
     }
-    .header h1 span {
-      background: #a8935a;
-      color: #0d2136;
-      font-size: 0.75rem;
-      padding: 0.25rem 0.9rem;
-      border-radius: 30px;
-      letter-spacing: 0.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      box-shadow: 0 0 15px rgba(168, 147, 90, 0.4);
+    .logo-group { display:flex; align-items:center; gap:12px; }
+    .logo-icon {
+      width:36px; height:36px; background:var(--gold); border-radius:8px;
+      display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;
     }
-    .subtitle {
-      color: #8b9bb5;
-      font-size: 0.95rem;
-      margin-top: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 500;
+    .logo-text h1 {
+      font-family:'Playfair Display',serif; font-size:clamp(14px,3vw,19px);
+      font-weight:700; color:#fff; line-height:1.2; white-space:nowrap;
     }
-    
-    .section-title {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 2.5px;
-      font-weight: 700;
-      color: #a8935a;
-      margin: 2.5rem 0 1rem;
-      padding-left: 0.5rem;
-      border-left: 3px solid #a8935a;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .logo-text span { font-size:10px; color:var(--sand); letter-spacing:.12em; text-transform:uppercase; }
+    .header-right   { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+    .header-meta    { font-size:11px; color:var(--sand); text-align:right; line-height:1.6; }
+    .header-meta strong { color:var(--gold); }
+    .btn-refresh {
+      width:32px; height:32px; background:rgba(168,147,90,.15);
+      border:1px solid rgba(168,147,90,.3); border-radius:8px;
+      color:var(--gold); font-size:15px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background .2s; flex-shrink:0;
     }
-    
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      margin-bottom: 0.5rem;
+    .btn-refresh:hover  { background:rgba(168,147,90,.25); }
+    .btn-refresh.spinning { animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── NAV ──────────────────────────────────────── */
+    nav {
+      background:var(--navy-lt); padding:0 14px;
+      display:flex; overflow-x:auto; scrollbar-width:none;
+      border-bottom:1px solid rgba(168,147,90,.2);
     }
-    .metric-card {
-      background: linear-gradient(145deg, #111e30 0%, #0d1925 100%);
-      border: 1px solid rgba(168, 147, 90, 0.1);
-      border-radius: 16px;
-      padding: 1.4rem 1.2rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      position: relative;
+    nav::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      padding:11px 16px; background:none; border:none; color:var(--sand);
+      font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+      cursor:pointer; white-space:nowrap;
+      border-bottom:3px solid transparent; transition:color .2s,border-color .2s;
+    }
+    .tab-btn:hover  { color:var(--gold-lt); }
+    .tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+    /* ── MAIN ────────────────────────────────────── */
+    main { padding:20px 16px 48px; max-width:1280px; margin:0 auto; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; animation:fadeUp .3s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+    .section-title { font-family:'Playfair Display',serif; font-size:clamp(18px,4vw,26px); color:var(--navy); margin-bottom:4px; }
+    .section-sub   { font-size:12px; color:var(--olive); margin-bottom:20px; letter-spacing:.04em; }
+
+    /* ── KPI CARDS ────────────────────────────────── */
+    .kpi-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:12px; margin-bottom:22px;
+    }
+    .kpi-card {
+      background:var(--navy); border-radius:12px; padding:16px 14px;
+      position:relative; overflow:hidden; border:1px solid rgba(168,147,90,.15);
+      transition:transform .2s,box-shadow .2s;
+    }
+    .kpi-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(13,33,54,.25); }
+    .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold); }
+    .kpi-card .icon  { font-size:20px; margin-bottom:8px; display:block; }
+    .kpi-card .value { font-family:'Playfair Display',serif; font-size:clamp(20px,4vw,28px); font-weight:700; color:var(--gold); line-height:1; margin-bottom:4px; }
+    .kpi-card .label { font-size:10px; color:var(--sand); text-transform:uppercase; letter-spacing:.08em; line-height:1.4; }
+    .kpi-card .sub   { font-size:11px; color:var(--olive); margin-top:5px; }
+    .kpi-card.accent { background:var(--gold); }
+    .kpi-card.accent::before { background:var(--navy); }
+    .kpi-card.accent .value  { color:var(--navy); }
+    .kpi-card.accent .label  { color:var(--navy); opacity:.7; }
+    .kpi-card.accent .sub    { color:var(--forest); }
+
+    /* ── CHARTS ───────────────────────────────────── */
+    .chart-grid { display:grid; gap:14px; margin-bottom:22px; }
+    .chart-grid.cols-2 { grid-template-columns:repeat(auto-fit,minmax(460px,1fr)); }
+    /* Force 3 columns for side-by-side comparison, collapsing only on small mobile */
+    .chart-grid.cols-3-force { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 900px) {
+      .chart-grid.cols-3-force { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+      background:#fff; border-radius:12px; padding:18px;
+      border:1px solid var(--sand); box-shadow:0 2px 8px rgba(13,33,54,.05);
+    }
+    .chart-card.dark  { background:var(--navy); border-color:rgba(168,147,90,.2); }
+    .chart-card.span-2 { grid-column:1/-1; }
+    .chart-title { font-family:'Playfair Display',serif; font-size:14px; color:var(--navy); margin-bottom:3px; }
+    .chart-card.dark .chart-title { color:var(--gold); }
+    .chart-sub { font-size:11px; color:var(--olive); margin-bottom:14px; }
+    .chart-card.dark .chart-sub   { color:var(--sand); opacity:.7; }
+
+    .chart-wrap {
+      position:relative;
+      max-height: 320px;
       overflow: hidden;
     }
-    .metric-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 4px; height: 100%;
-      background: #a8935a;
-      border-radius: 0 4px 4px 0;
+    .chart-wrap canvas {
+      max-height: 300px !important;
     }
-    .metric-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(168, 147, 90, 0.3);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px rgba(168, 147, 90, 0.05);
+    .chart-card.span-2 .chart-wrap {
+      max-height: 450px;
     }
-    .metric-card .label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #8b9bb5;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
+    .chart-card.span-2 .chart-wrap canvas {
+      max-height: 430px !important;
     }
-    .metric-card .value {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: white;
-      line-height: 1.1;
-      margin: 0.2rem 0;
+
+    /* ── DOUGHNUT WRAP ──────────────────────────── */
+    .chart-wrap-doughnut {
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 10px 0; gap: 15px;
+      max-height: 350px;
     }
-    .metric-card .context {
-      font-size: 0.75rem;
-      color: #5e7089;
-      font-weight: 500;
+    .chart-wrap-doughnut canvas {
+      max-width: 240px !important;
+      max-height: 240px !important;
     }
-    
-    .card {
-      background: #0d1925;
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 20px;
-      padding: 1.8rem;
-      margin-top: 1rem;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-    .card:hover {
-      border-color: rgba(255,255,255,0.08);
-    }
-    
-    .card-small {
-      background: #0d1925;
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin-top: 1rem;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-    }
-    
-    .card-header {
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      border-left: 4px solid #a8935a;
-      padding-left: 1rem;
-      color: #ffffff;
-    }
-    .card-header-small {
-      font-weight: 700;
-      font-size: 0.9rem;
-      margin-bottom: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      border-left: 4px solid #a8935a;
-      padding-left: 1rem;
-      color: #ffffff;
-    }
-    
-    .two-column {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-      margin-top: 0.8rem;
-    }
-    .three-column {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-      margin-top: 0.8rem;
-    }
-    
-    table {
+    .donut-legend {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 0.85rem;
+      max-width: 350px;
+      font-size: 12px;
     }
-    th {
-      text-align: left;
-      padding: 0.9rem 1rem;
-      color: #a8935a;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 0.7rem;
-      border-bottom: 1px solid #a8935a;
-      background: rgba(168, 147, 90, 0.03);
+    .donut-legend div {
+      display: flex; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid var(--sand);
     }
-    td {
-      padding: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      color: #d3dce9;
-      transition: background 0.2s ease;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(168, 147, 90, 0.03); }
+    .donut-legend div:last-child { border-bottom: none; }
+    .legend-left { display: flex; align-items: center; gap: 8px; color: var(--forest); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+    /* Fixed contrast for white background card */
+    .legend-right { font-weight: 600; color: var(--navy); }
+    .legend-right small { color: var(--olive); }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th { background:var(--navy); color:var(--gold); padding:9px 12px; text-align:left; font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+    td { padding:8px 12px; border-bottom:1px solid var(--sand); color:var(--forest); white-space:nowrap; }
+    tr:hover td { background:rgba(168,147,90,.06); }
+    tr:last-child td { border-bottom:none; }
     
-    .badge {
-      background: rgba(168, 147, 90, 0.1);
-      color: #a8935a;
-      padding: 0.3rem 0.9rem;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      border: 1px solid rgba(168, 147, 90, 0.3);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
+    /* ── CUSTOM LEGEND BARS ── */
+    .custom-bar-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      margin: 0.6rem 0; transition: transform 0.2s ease;
     }
-    .badge::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: #a8935a;
-      border-radius: 50%;
+    .custom-bar-item:hover { transform: translateX(4px); }
+    .custom-bar-label {
+      width: 130px; font-weight: 600; font-size: 0.85rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--forest);
     }
-    .badge-enrolled {
-      background: rgba(13, 33, 54, 0.4);
-      color: #7e93b3;
-      border-color: rgba(13, 33, 54, 0.6);
+    .chart-card.dark .custom-bar-label { color: var(--sand); }
+    .custom-bar-track {
+      flex: 1; height: 10px; background: rgba(0,0,0,0.05);
+      border-radius: 12px; overflow: hidden; position: relative;
     }
-    .badge-enrolled::before { background: #4a6f9e; }
-    .badge-inactive {
-      background: rgba(255,255,255,0.03);
-      color: #5e7089;
-      border-color: rgba(255,255,255,0.08);
-    }
-    .badge-inactive::before { background: #5e7089; }
-    
-    .bar-item {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin: 0.6rem 0;
-      transition: transform 0.2s ease;
-    }
-    .bar-item:hover {
-      transform: translateX(4px);
-    }
-    .bar-label {
-      width: 130px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #d3dce9;
-    }
-    .bar-track {
-      flex: 1;
-      height: 10px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-      overflow: hidden;
+    .chart-card.dark .custom-bar-track { background: rgba(255,255,255,0.1); }
+    .custom-bar-fill {
+      height: 100%; border-radius: 12px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-lt) 100%);
       position: relative;
     }
-    .bar-fill {
-      height: 100%;
-      border-radius: 12px;
-      background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);
-      position: relative;
+    .custom-bar-value {
+      font-weight: 700; font-size: 0.9rem; min-width: 70px;
+      text-align: right; color: var(--navy);
     }
-    .bar-value {
-      font-weight: 700;
-      font-size: 0.9rem;
-      min-width: 70px;
-      text-align: right;
-      color: #ffffff;
+    .chart-card.dark .custom-bar-value { color: #fff; }
+
+    /* ── LARGEST/SMALLEST BLOCKS ── */
+    .block-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+    .block-info-card {
+      background: linear-gradient(145deg, var(--navy-lt) 0%, var(--navy) 100%);
+      padding: 1.2rem; border-radius: 14px; border: 1px solid rgba(168,147,90,0.1);
     }
-    
-    .vc-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 0.5rem;
-    }
+    .block-info-label { font-size: 0.7rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem; }
+    .block-info-val { font-weight: 700; color: white; font-family: 'Playfair Display', serif; }
+    .block-info-sub { font-size: 0.8rem; color: var(--sand); margin-top: 0.3rem; }
+
+    /* ── VC PILLS ── */
+    .vc-container { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
     .vc-pill {
       background: rgba(168, 147, 90, 0.08);
       border: 1px solid rgba(168, 147, 90, 0.2);
-      color: #c8b582;
-      padding: 0.4rem 1.2rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      cursor: default;
+      color: var(--gold-dim);
+      padding: 0.4rem 1.2rem; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 500; transition: all 0.2s ease;
     }
-    .vc-pill:hover {
-      background: rgba(168, 147, 90, 0.15);
-      border-color: rgba(168, 147, 90, 0.4);
-      transform: translateY(-1px);
+    .vc-pill:hover { background: rgba(168, 147, 90, 0.15); transform: translateY(-1px); }
+
+    .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+    .badge-gold  { background:rgba(168,147,90,.15); color:var(--gold-dim); }
+    .badge-enrolled { background: rgba(13, 33, 54, 0.1); color: var(--navy-lt); }
+    .badge-inactive { background: rgba(0,0,0,0.05); color: var(--olive); }
+
+    /* ── PWA INSTALL BUTTON ── */
+    .install-button {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #a8935a; color: #0d2136; border: none;
+      padding: 14px 24px; border-radius: 50px;
+      font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      display: none; align-items: center; gap: 10px;
+      box-shadow: 0 8px 25px rgba(168, 147, 90, 0.6);
+      z-index: 1000; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      animation: slideUp 0.5s ease-out; letter-spacing: 0.5px;
+      font-family: 'DM Sans', sans-serif;
     }
-    
-    .donut-container {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    
-    .error-message {
-      background: rgba(230, 126, 34, 0.1);
-      border: 1px solid rgba(230, 126, 34, 0.3);
-      padding: 1rem 1.2rem;
-      border-radius: 12px;
-      color: #f0d78c;
-      font-size: 0.85rem;
-      margin: 0.5rem 0;
-    }
-    
-    .updated {
-      text-align: right;
-      color: #3e4f63;
-      font-size: 0.75rem;
-      margin-top: 3rem;
-      font-weight: 500;
-    }
-    
-    .membership-bars-large { min-height: 300px; }
-    .membership-bars-large .bar-item { margin: 0.9rem 0; }
-    .membership-bars-large .bar-track { height: 24px; border-radius: 12px; }
-    .membership-bars-large .bar-fill { border-radius: 12px; }
-    
-    .gender-breakdown-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.2rem;
-      width: 100%;
-    }
-    .donut-canvas-wrapper {
-      position: relative;
-      width: min(100%, 280px);
-      aspect-ratio: 1 / 1;
-      height: auto;
-      margin: 0 auto;
-      flex-shrink: 0;
-    }
-    /* Wide view (tablet/desktop/pc): donut spans full width and stays capped to viewport height
-       so the card, title and header all fit on screen together */
-    @media (min-width: 768px) {
-      .donut-canvas-wrapper {
-        width: 100%;
-        aspect-ratio: auto;
-        height: min(48vh, 480px);
-      }
-      .gender-breakdown-wrapper { flex-direction: column; }
-      .donut-legend-compact { width: 100%; max-width: 480px; }
-    }
-    .donut-legend-compact {
-      font-size: 0.85rem;
-      padding-top: 0.5rem;
-      flex: 1;
-      min-width: 0;
-    }
-    .donut-legend-compact div {
-      margin: 0.4rem 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      flex-wrap: wrap;
-    }
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 3px;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-    /* Animations */
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .animate-in {
-      animation: fadeInUp 0.6s ease-out forwards;
-      opacity: 0;
-    }
-    @media (max-width: 600px) {
-      body { padding: 1rem; }
-      .bar-label { width: 90px; font-size: 0.8rem; }
-      .membership-bars-large .bar-track { height: 18px; }
-      .metric-card .value { font-size: 1.8rem; }
+    .install-button:hover { transform: translateY(-3px); background: #b8a36a; box-shadow: 0 12px 35px rgba(168, 147, 90, 0.8); }
+    .install-button:active { transform: translateY(0); box-shadow: 0 4px 15px rgba(168, 147, 90, 0.4); }
+    .install-button svg { width: 20px; height: 20px; fill: #0d2136; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      .chart-grid.cols-2 { grid-template-columns: 1fr; }
+      .block-grid { grid-template-columns: 1fr; }
+      .custom-bar-label { width: 90px; font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
-<div class="dashboard">
-  <div class="header">
-    <h1>APATSA Secondary Cooperatives <span>Live</span></h1>
-    <div class="subtitle"><span>📊 Performance dashboard · synced with Google Sheets</span></div>
-  </div>
-  <div class="section-title">📌 Overview</div>
-  <div class="metrics-grid" id="topMetrics"></div>
-  <div class="section-title">🌾 All unions at a glance</div>
-  <div class="card animate-in" style="animation-delay: 0.1s;">
-    <div class="card-header">Union status & summary</div>
-    <div style="overflow-x: auto;"><table id="unionTable"></table></div>
-  </div>
-  <div class="section-title">🗺️ Land use</div>
-  <div class="card animate-in" style="animation-delay: 0.2s;">
-    <div class="card-header">Hectarage by union</div>
-    <div id="hectareBars"></div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;" id="largestSmallest"></div>
-  </div>
-  <div class="section-title">🌱 Value chains</div>
-  <div class="card animate-in" style="animation-delay: 0.3s;">
-    <div class="card-header">Unique value chains across active unions</div>
-    <div class="vc-container" id="valueChainList"></div>
-    <p style="font-size:0.75rem; color:#5e7089; margin-top:0.8rem;" id="vcNote"></p>
-  </div>
-  <div class="section-title">👥 Membership</div>
-  <div class="card animate-in" style="animation-delay: 0.4s;">
-    <div class="card-header">Total membership by union</div>
-    <div id="membershipBars" class="membership-bars-large"></div>
-  </div>
-  <div class="section-title">🚺 Gender overview</div>
-  <div class="card-small animate-in" style="animation-delay: 0.5s;">
-    <div class="card-header-small">Overall breakdown</div>
-    <div class="gender-breakdown-wrapper">
-      <div class="donut-canvas-wrapper"><canvas id="donutChart" aria-label="gender breakdown donut"></canvas></div>
-      <div id="donutLegend" class="donut-legend-compact"></div>
-    </div>
-  </div>
-  <div class="section-title">🚺🚹♿ Female, Youth & PLWD focus</div>
-  <div class="three-column">
-    <div class="card animate-in" style="animation-delay: 0.6s;">
-      <div class="card-header">Female share per union</div>
-      <div id="femaleBars"></div>
-    </div>
-    <div class="card animate-in" style="animation-delay: 0.7s;">
-      <div class="card-header">Youth share per union</div>
-      <div id="youthBars"></div>
-    </div>
-    <div class="card animate-in" style="animation-delay: 0.8s;">
-      <div class="card-header">PLWD share per union</div>
-      <div id="plwdBars"></div>
-    </div>
-  </div>
-  <div class="section-title">📊 Composition breakdown</div>
-  <div class="card animate-in" style="animation-delay: 0.9s;">
-    <div class="card-header">Stacked per union</div>
-    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.8rem;">
-      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#0d2136;"></span> Female</span>
-      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#a8935a;"></span> Youth</span>
-      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#d8d0c6;"></span> Male</span>
-      <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#7e2138;"></span> PLWD</span>
-    </div>
-    <div id="stackedContainer" style="height:420px;"><canvas id="stackedChart"></canvas></div>
-  </div>
-  <div class="updated" id="updatedLine"></div>
-</div>
 
-<!-- PWA Service Worker Registration -->
+<header>
+  <div class="logo-group">
+    <div class="logo-icon">📊</div>
+    <div class="logo-text">
+      <h1>APATSA Dashboard</h1>
+      <span>Secondary Cooperatives</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-meta"><strong>Live Data</strong><br><span id="data-status">Connecting…</span></div>
+    <button class="btn-refresh" id="btn-refresh" onclick="manualRefresh()" title="Refresh">↻</button>
+  </div>
+</header>
+
+<nav>
+  <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+  <button class="tab-btn" onclick="showTab('unions',this)">All Unions</button>
+  <button class="tab-btn" onclick="showTab('land',this)">Land Use</button>
+  <button class="tab-btn" onclick="showTab('value',this)">Value Chains</button>
+  <button class="tab-btn" onclick="showTab('membership',this)">Membership</button>
+  <button class="tab-btn" onclick="showTab('gender',this)">Demographics</button>
+</nav>
+
+<main>
+  <div id="tab-overview" class="tab-panel active">
+    <p class="section-title">Operations Overview</p>
+    <p class="section-sub">Consolidated summary across all active cooperatives</p>
+    
+    <div class="kpi-grid" id="topMetrics"></div>
+
+    <div class="chart-grid cols-2">
+      <div class="chart-card span-2">
+        <div class="chart-title">Union Status & Summary</div>
+        <div class="chart-sub">Breakdown of cooperatives, land, and demographics per union</div>
+        <div class="table-wrap"><table id="unionTable"></table></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Gender Breakdown</div>
+        <div class="chart-sub">Overall male vs female distribution</div>
+        <div class="chart-wrap-doughnut">
+          <canvas id="donutChart"></canvas>
+          <div id="donutLegend" class="donut-legend"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Composition Breakdown</div>
+        <div class="chart-sub">Stacked demographics per union</div>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.8rem;">
+          <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#0d2136;"></span> Female</span>
+          <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#a8935a;"></span> Youth</span>
+          <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#d8d0c6;"></span> Male</span>
+          <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#7e2138;"></span> PLWD</span>
+        </div>
+        <div id="stackedContainer" style="height:420px; position: relative;"><canvas id="stackedChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-unions" class="tab-panel">
+    <p class="section-title">All Unions at a Glance</p>
+    <p class="section-sub">Detailed breakdown of status and members</p>
+    <div class="chart-card">
+      <div class="chart-title">Union Status & Summary</div>
+      <div class="chart-sub">Active, enrolled, and pending cooperatives</div>
+      <div class="table-wrap"><table id="unionTable2"></table></div>
+    </div>
+  </div>
+
+  <div id="tab-land" class="tab-panel">
+    <p class="section-title">Land Use</p>
+    <p class="section-sub">Hectarage by union</p>
+    <div class="chart-card dark">
+      <div class="chart-title">Hectarage by Union</div>
+      <div class="chart-sub">Total land in use (hectares)</div>
+      <div id="hectareBars"></div>
+      <div class="block-grid" id="largestSmallest"></div>
+    </div>
+  </div>
+
+  <div id="tab-value" class="tab-panel">
+    <p class="section-title">Value Chains</p>
+    <p class="section-sub">Unique value chains across active unions</p>
+    <div class="chart-card">
+      <div class="chart-title">Value Chains</div>
+      <div class="chart-sub">Crops and products cultivated</div>
+      <div class="vc-container" id="valueChainList"></div>
+      <p style="font-size:0.75rem; color:var(--olive); margin-top:0.8rem;" id="vcNote"></p>
+    </div>
+  </div>
+
+  <div id="tab-membership" class="tab-panel">
+    <p class="section-title">Membership</p>
+    <p class="section-sub">Total membership by union</p>
+    <div class="chart-card">
+      <div class="chart-title">Total Membership</div>
+      <div class="chart-sub">Number of members per union</div>
+      <div id="membershipBars"></div>
+    </div>
+  </div>
+
+  <div id="tab-gender" class="tab-panel">
+    <p class="section-title">Demographics Overview</p>
+    <p class="section-sub">Female, Youth & PLWD focus</p>
+
+    <div class="chart-grid cols-2">
+      <div class="chart-card span-2" style="background: #fff;">
+        <div class="chart-title">Gender Overview</div>
+        <div class="chart-sub">Overall male vs female distribution</div>
+        <div class="chart-wrap-doughnut">
+          <canvas id="donutChart2"></canvas>
+          <div id="donutLegend2" class="donut-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid cols-3-force">
+      <div class="chart-card dark">
+        <div class="chart-title">Female Share Per Union</div>
+        <div class="chart-sub">Percentage of female members</div>
+        <div id="femaleBars"></div>
+      </div>
+      <div class="chart-card dark">
+        <div class="chart-title">Youth Share Per Union</div>
+        <div class="chart-sub">Youth as % of total gender base</div>
+        <div id="youthBars"></div>
+      </div>
+      <div class="chart-card dark">
+        <div class="chart-title">PLWD Share Per Union</div>
+        <div class="chart-sub">PLWD as % of total gender base</div>
+        <div id="plwdBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="updated" style="text-align: right; color: var(--olive); font-size: 0.75rem; margin-top: 3rem; font-weight: 500;" id="updatedLine"></div>
+</main>
+
+<button id="installButton" class="install-button" aria-label="Install APATSA Dashboard app">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+  </svg>
+  Install App
+</button>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/apatsa-dashboard/sw.js', {
-        scope: '/apatsa-dashboard/'
-      }).then(registration => {
-        console.log('ServiceWorker registered with scope:', registration.scope);
-      }).catch(err => {
-        console.log('ServiceWorker registration failed:', err);
-      });
+      navigator.serviceWorker.register('/apatsa-dashboard/sw.js', { scope: '/apatsa-dashboard/' })
+        .catch(err => console.log('ServiceWorker registration failed:', err));
     });
   }
-</script>
 
-<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+  }
+
   (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1knivWdKyjLIxSNshbJOb7p0Iv-JzMiZmRsP0bID8jc-NTOQnexsBTNDjXDm9uPyOsJwA7mfdBa6P/pub?gid=0&single=true&output=csv";
     const FALLBACK_DATA = [
@@ -507,13 +456,19 @@
       { name:"HIMACUL", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 },
       { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"", membership:0, male:0, female:0, youth:0, plwd:0 }
     ];
+
     const toNum = (val) => {
       if (val === null || val === undefined || val === '') return 0;
       let num = Number(String(val).replace(/[^0-9.-]/g, ''));
       return isNaN(num) ? 0 : num;
     };
     const fmt = (val) => typeof val === 'number' ? val.toLocaleString() : val;
-    const pct = (part, total) => total > 0 ? Math.round((part / total) * 100) : 0;
+    
+    // CORRECTED MATH: Gender totals exclude Youth/PLWD. Youth/PLWD % are calculated from Male+Female.
+    const totalGender = (r) => r.male + r.female;
+    const pctGender = (part, r) => totalGender(r) > 0 ? Math.round((part / totalGender(r)) * 100) : 0;
+    const pctFemale = (r) => totalGender(r) > 0 ? Math.round((r.female / totalGender(r)) * 100) : 0;
+
     function parseCSV(text) {
       const rows = [];
       let row = [], field = '', inQuotes = false;
@@ -531,15 +486,17 @@
       if (field || row.length) { row.push(field.trim()); rows.push(row); }
       return rows.filter(r => r.some(cell => cell !== ''));
     }
+
     function isTotalsRow(row, headers) {
       const nameIdx = headers.findIndex(h => /union|secondary|cooperative|name/i.test(h) && !/value|chain/i.test(h));
       if (nameIdx === -1) return false;
       const nameVal = (row[nameIdx] || '').trim().toLowerCase();
       return nameVal.includes('total') || nameVal === 'totals' || nameVal === 'overall';
     }
+
     async function fetchData() {
       try {
-        const response = await fetch(CSV_URL, { cache: 'no-store' });
+        const response = await fetch(CSV_URL + '?cb=' + Date.now(), { cache: 'no-store' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const csvText = await response.text();
         if (!csvText.trim()) throw new Error('Empty CSV');
@@ -567,9 +524,11 @@
           youth: headers.findIndex(h => /^youth$/i.test(h)),
           plwd: headers.findIndex(h => /plwd|pwd|disab/i.test(h)),
         };
+        
         if (colIndex.name === -1) throw new Error('Union name column missing');
         const data = [];
         const totalsAcc = { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0, plwd:0 };
+        
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (row.length === 0) continue;
@@ -609,13 +568,10 @@
           acc.male += r.male; acc.female += r.female; acc.youth += r.youth; 
           acc.plwd += r.plwd || 0; return acc;
         }, { coops:0, hectarage:0, membership:0, male:0, female:0, youth:0, plwd:0 });
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.innerHTML = `⚠️ Using offline fallback. Live sync error: ${err.message}`;
-        document.querySelector('.subtitle').after(errorDiv);
         return { data: FALLBACK_DATA, totals: fallbackTotals };
       }
     }
+
     function getUniqueValueChains(data) {
       const active = data.filter(r => r.coops > 0 && r.membership > 0);
       const chainSet = new Set();
@@ -629,26 +585,17 @@
       });
       return Array.from(chainSet).sort((a,b) => a.localeCompare(b));
     }
-    function render(data, totals) {
-      const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
-      const enrolled = data.filter(r => r.coops > 0);
-      document.getElementById('topMetrics').innerHTML = [
-        { label: 'Active unions', value: activeUnions.length, sub: 'with cooperatives & members' },
-        { label: 'Total cooperatives', value: fmt(totals.coops), sub: 'across all unions' },
-        { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares in use' },
-        { label: 'Total membership', value: fmt(totals.membership), sub: 'members' },
-        { label: 'Female %', value: pct(totals.female, totals.membership)+'%', sub: fmt(totals.female)+' members' },
-        { label: 'Youth %', value: pct(totals.youth, totals.membership)+'%', sub: fmt(totals.youth)+' members' },
-        { label: 'PLWD %', value: pct(totals.plwd, totals.membership)+'%', sub: fmt(totals.plwd)+' members' }
-      ].map((m, i) => `<div class="metric-card animate-in" style="animation-delay: ${i * 0.05}s;"><div class="label">${m.label}</div><div class="value">${m.value}</div><div class="context">${m.sub}</div></div>`).join('');
+
+    function renderTable(data, tableId) {
       const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','PLWD','Status'].map(h => `<th>${h}</th>`).join('');
       const tableRows = data.map(r => {
-        const status = (r.coops>0 && r.membership>0) ? '<span class="badge">Active</span>' : (r.coops>0 ? '<span class="badge badge-enrolled">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
-        const femDisplay = r.membership>0 ? `${fmt(r.female)} <small style="color:#a8935a;">(${pct(r.female,r.membership)}%)</small>` : '—';
-        const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:#7e93b3;">(${pct(r.youth,r.membership)}%)</small>` : '—';
-        const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:#c0455e;">(${pct(r.plwd,r.membership)}%)</small>` : '—';
+        const status = (r.coops>0 && r.membership>0) ? '<span class="badge badge-gold">Active</span>' : (r.coops>0 ? '<span class="badge badge-enrolled">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
+        const tG = totalGender(r);
+        const femDisplay = tG>0 ? `${fmt(r.female)} <small style="color:var(--gold-dim);">(${pctFemale(r)}%)</small>` : '—';
+        const youthDisplay = tG>0 ? `${fmt(r.youth)} <small style="color:var(--navy-lt);">(${pctGender(r.youth, r)}%)</small>` : '—';
+        const plwdDisplay = tG>0 ? `${fmt(r.plwd)} <small style="color:var(--plum-lt);">(${pctGender(r.plwd, r)}%)</small>` : '—';
         return `<tr>
-          <td style="font-weight:600;color:white;">${r.name}</td>
+          <td style="font-weight:600;color:var(--navy);">${r.name}</td>
           <td>${r.coops || '—'}</td>
           <td>${r.hectarage>0 ? fmt(r.hectarage)+' ha' : '—'}</td>
           <td>${r.membership>0 ? fmt(r.membership) : '—'}</td>
@@ -658,113 +605,139 @@
           <td>${status}</td>
         </tr>`;
       }).join('');
-      document.getElementById('unionTable').innerHTML = `<thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody>`;
+      const el = document.getElementById(tableId);
+      if (el) el.innerHTML = `<thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody>`;
+    }
+
+    function renderDonut(canvasId, legendId, totals) {
+      const tG = totalGender(totals);
+      if (window[canvasId + '_inst']) window[canvasId + '_inst'].destroy();
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      window[canvasId + '_inst'] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Female', 'Male'],
+          datasets: [{
+            data: [totals.female, totals.male],
+            backgroundColor: ['#a8935a', '#0d2136'],
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverBorderColor: '#ffffff',
+            hoverBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '65%',
+          plugins: { 
+            legend: { display: false },
+            tooltip: { backgroundColor: '#111e30', titleColor: '#a8935a', bodyColor: '#d3dce9' }
+          }
+        }
+      });
+      const legEl = document.getElementById(legendId);
+      if (legEl) {
+        legEl.innerHTML = [
+          { label: 'Female', color: '#a8935a', val: totals.female },
+          { label: 'Male', color: '#0d2136', val: totals.male }
+        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${pctGender(item.val, totals)}%)</small></span></div>`).join('');
+      }
+    }
+
+    function render(data, totals) {
+      const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
+      const enrolled = data.filter(r => r.coops > 0);
+      const tG = totalGender(totals);
+
+      // KPI Cards
+      document.getElementById('topMetrics').innerHTML = [
+        { label: 'Active unions', value: activeUnions.length, sub: 'with cooperatives & members', icon: '🏛️', accent: true },
+        { label: 'Total cooperatives', value: fmt(totals.coops), sub: 'across all unions', icon: '🤝' },
+        { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares in use', icon: '🗺️' },
+        { label: 'Total membership', value: fmt(totals.membership), sub: 'members', icon: '👥' },
+        { label: 'Female %', value: pctFemale(totals)+'%', sub: fmt(totals.female)+' of '+fmt(tG)+' gender base', icon: '🚺' },
+        { label: 'Youth %', value: pctGender(totals.youth, totals)+'%', sub: fmt(totals.youth)+' of '+fmt(tG)+' gender base', icon: '🌱' },
+        { label: 'PLWD %', value: pctGender(totals.plwd, totals)+'%', sub: fmt(totals.plwd)+' of '+fmt(tG)+' gender base', icon: '♿' }
+      ].map(m => `<div class="kpi-card ${m.accent ? 'accent' : ''}"><span class="icon">${m.icon}</span><div class="value">${m.value}</div><div class="label">${m.label}</div><div class="sub">${m.sub}</div></div>`).join('');
+
+      // Tables
+      renderTable(data, 'unionTable');
+      renderTable(data, 'unionTable2');
+
+      // Hectarage Bars
       const hectActive = activeUnions.filter(r => r.hectarage > 0).sort((a,b) => b.hectarage - a.hectarage);
       const maxHect = hectActive.length ? Math.max(...hectActive.map(r => r.hectarage)) : 1;
-      document.getElementById('hectareBars').innerHTML = hectActive.length ? hectActive.map((r) => `
-        <div class="bar-item">
-          <div class="bar-label">${r.name}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${(r.hectarage/maxHect)*100}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div>
-          <div class="bar-value">${fmt(r.hectarage)} ha</div>
-        </div>`).join('') : '<p style="color:#5e7089;">No land data available.</p>';
+      document.getElementById('hectareBars').innerHTML = hectActive.length ? hectActive.map(r => `
+        <div class="custom-bar-item">
+          <div class="custom-bar-label">${r.name}</div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${(r.hectarage/maxHect)*100}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div>
+          <div class="custom-bar-value">${fmt(r.hectarage)} ha</div>
+        </div>`).join('') : '<p style="color:var(--sand);">No land data available.</p>';
+
+      // Largest/Smallest
       if (activeUnions.length) {
         const sortedLarge = [...activeUnions].sort((a,b) => b.largestHect - a.largestHect);
         const sortedSmall = [...activeUnions].filter(r => r.smallestHect > 0).sort((a,b) => a.smallestHect - b.smallestHect);
         const largest = sortedLarge[0];
         const smallest = sortedSmall.length ? sortedSmall[0] : sortedLarge[sortedLarge.length-1];
         document.getElementById('largestSmallest').innerHTML = `
-          <div style="background:linear-gradient(145deg, #14293e 0%, #0f2030 100%); padding:1.2rem; border-radius:14px; border:1px solid rgba(168,147,90,0.1);">
-            <div style="font-size:0.7rem; color:#a8935a; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">⬆️ Largest Cooperative</div>
-            <div style="font-weight:700; color:white;">—</div>
-            <div style="font-size:0.8rem; color:#8b9bb5;">${largest.name}${largest.largestCoop ? `, '${largest.largestCoop}'` : ''} · ${fmt(largest.largestHect)} ha</div>
+          <div class="block-info-card">
+            <div class="block-info-label">⬆️ Largest Cooperative</div>
+            <div class="block-info-val">${largest.largestCoop || '—'}</div>
+            <div class="block-info-sub">${largest.name} · ${fmt(largest.largestHect)} ha</div>
           </div>
-          <div style="background:linear-gradient(145deg, #14293e 0%, #0f2030 100%); padding:1.2rem; border-radius:14px; border:1px solid rgba(255,255,255,0.04);">
-            <div style="font-size:0.7rem; color:#8b9bb5; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">⬇️ Smallest Cooperative</div>
-            <div style="font-weight:700; color:white;">—</div>
-            <div style="font-size:0.8rem; color:#8b9bb5;">${smallest.name}${smallest.smallestCoop ? `, '${smallest.smallestCoop}'` : ''} · ${fmt(smallest.smallestHect)} ha</div>
+          <div class="block-info-card">
+            <div class="block-info-label">⬇️ Smallest Cooperative</div>
+            <div class="block-info-val">${smallest.smallestCoop || '—'}</div>
+            <div class="block-info-sub">${smallest.name} · ${fmt(smallest.smallestHect)} ha</div>
           </div>`;
-      } else {
-        document.getElementById('largestSmallest').innerHTML = '<p style="color:#5e7089;">No cooperative details.</p>';
       }
+
+      // Value Chains
       const uniqueChains = getUniqueValueChains(data);
       const vcContainer = document.getElementById('valueChainList');
       if (uniqueChains.length) {
         vcContainer.innerHTML = uniqueChains.map(v => `<span class="vc-pill">${v}</span>`).join('');
         document.getElementById('vcNote').textContent = `Showing ${uniqueChains.length} unique value chains from active unions.`;
       } else {
-        vcContainer.innerHTML = '<span style="color:#5e7089;">No value chain data available.</span>';
-        document.getElementById('vcNote').textContent = '';
+        vcContainer.innerHTML = '<span style="color:var(--olive);">No value chain data available.</span>';
       }
+
+      // Membership Bars
       const withMembers = enrolled.filter(r => r.membership > 0).sort((a,b) => b.membership - a.membership);
       const maxMem = withMembers.length ? Math.max(...withMembers.map(r => r.membership)) : 1;
-      document.getElementById('membershipBars').innerHTML = withMembers.length ? withMembers.map((r) => `
-        <div class="bar-item">
-          <div class="bar-label">${r.name}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${(r.membership/maxMem)*100}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div>
-          <div class="bar-value">${fmt(r.membership)}</div>
-        </div>`).join('') : '<p style="color:#5e7089;">No membership data.</p>';
-      // Gender breakdown donut — primary colors, large for wide views
-      if (window.donutInstance) window.donutInstance.destroy();
-      if (totals.membership > 0) {
-        const ctx = document.getElementById('donutChart').getContext('2d');
-        window.donutInstance = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Female', 'Male'],
-            datasets: [{
-              data: [totals.female, totals.male],
-              backgroundColor: ['#a8935a', '#0d2136'],
-              borderColor: '#0d1925',
-              borderWidth: 2,
-              hoverBorderColor: '#ffffff',
-              hoverBorderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: { 
-              legend: { display: false },
-              tooltip: { 
-                backgroundColor: '#111e30',
-                titleColor: '#a8935a',
-                bodyColor: '#d3dce9',
-                borderColor: 'rgba(168,147,90,0.2)',
-                borderWidth: 1,
-                padding: 10,
-                bodyFont: { size: 12 },
-                titleFont: { size: 12 }
-              }
-            }
-          }
-        });
-      }
-      document.getElementById('donutLegend').innerHTML = [
-        { label: 'Female', color: '#a8935a', val: totals.female },
-        { label: 'Male', color: '#0d2136', val: totals.male }
-      ].map(item => `<div style="display:flex; justify-content:space-between;"><span style="display:flex; align-items:center; gap:0.5rem;"><span style="background:${item.color}; width:10px; height:10px; display:inline-block; border-radius:3px;"></span> ${item.label}</span> <strong style="color:white;">${fmt(item.val)} <small style="color:#8b9bb5;">(${pct(item.val, totals.membership)}%)</small></strong></div>`).join('');
-      const withGender = withMembers.filter(r => r.female > 0 || r.youth > 0 || r.plwd > 0);
-      document.getElementById('femaleBars').innerHTML = [...withGender].sort((a,b) => pct(b.female,b.membership) - pct(a.female,a.membership)).map((r) => {
-        const perc = pct(r.female, r.membership);
-        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div><div class="bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:#5e7089;">No data.</p>';
+      document.getElementById('membershipBars').innerHTML = withMembers.length ? withMembers.map(r => `
+        <div class="custom-bar-item">
+          <div class="custom-bar-label">${r.name}</div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${(r.membership/maxMem)*100}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div>
+          <div class="custom-bar-value">${fmt(r.membership)}</div>
+        </div>`).join('') : '<p style="color:var(--olive);">No membership data.</p>';
+
+      // Donut Charts (Overview + Demographics Tab)
+      renderDonut('donutChart', 'donutLegend', totals);
+      renderDonut('donutChart2', 'donutLegend2', totals);
+
+      // Demographics Bars
+      const withGender = withMembers.filter(r => totalGender(r) > 0);
       
-      document.getElementById('youthBars').innerHTML = [...withGender].sort((a,b) => pct(b.youth,b.membership) - pct(a.youth,a.membership)).map((r) => {
-        const perc = pct(r.youth, r.membership);
-        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div><div class="bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:#5e7089;">No data.</p>';
+      document.getElementById('femaleBars').innerHTML = [...withGender].sort((a,b) => pctFemale(b) - pctFemale(a)).map(r => {
+        const perc = pctFemale(r);
+        return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:var(--sand);">No data.</p>';
       
-      document.getElementById('plwdBars').innerHTML = [...withGender].sort((a,b) => pct(b.plwd,b.membership) - pct(a.plwd,a.membership)).map((r) => {
-        const perc = pct(r.plwd, r.membership);
-        return `<div class="bar-item"><div class="bar-label">${r.name}</div><div class="bar-track"><div class="bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #7e2138 0%, #a8425c 100%);"></div></div><div class="bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:#5e7089;">No data.</p>';
-      // Stacked chart — converted to horizontal stacked bar, combined tooltips, primary/secondary colors
+      document.getElementById('youthBars').innerHTML = [...withGender].sort((a,b) => pctGender(b.youth,b) - pctGender(a.youth,a)).map(r => {
+        const perc = pctGender(r.youth, r);
+        return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:var(--sand);">No data.</p>';
+      
+      document.getElementById('plwdBars').innerHTML = [...withGender].sort((a,b) => pctGender(b.plwd,b) - pctGender(a.plwd,a)).map(r => {
+        const perc = pctGender(r.plwd, r);
+        return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #7e2138 0%, #a8425c 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
+      }).join('') || '<p style="color:var(--sand);">No data.</p>';
+
+      // Stacked Chart
       if (window.stackedInstance) window.stackedInstance.destroy();
       if (withMembers.length) {
-        // Sort by the actual stacked total (female+youth+male+plwd) descending
         const stackedSorted = [...withMembers].sort((a,b) => (b.female+b.youth+b.male+b.plwd) - (a.female+a.youth+a.male+a.plwd));
-        // Scale container height based on number of unions so horizontal bars stay readable
         document.getElementById('stackedContainer').style.height = Math.max(320, stackedSorted.length * 60) + 'px';
         const stackedCtx = document.getElementById('stackedChart').getContext('2d');
         window.stackedInstance = new Chart(stackedCtx, {
@@ -779,50 +752,15 @@
             ]
           },
           options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-              axis: 'y'
-            },
-            datasets: {
-              bar: {
-                barPercentage: 0.85,
-                categoryPercentage: 0.9
-              }
-            },
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false, axis: 'y' },
             scales: {
-              x: { 
-                stacked: true, 
-                ticks: { color: '#8b9bb5', font: { size: 11 } },
-                grid: { color: 'rgba(255,255,255,0.03)' },
-                border: { color: 'rgba(255,255,255,0.05)' }
-              },
-              y: { 
-                stacked: true, 
-                ticks: { color: '#8b9bb5', font: { size: 11 } },
-                grid: { color: 'rgba(255,255,255,0.03)' },
-                border: { color: 'rgba(255,255,255,0.05)' }
-              }
+              x: { stacked: true, ticks: { color: '#7a7a7a', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+              y: { stacked: true, ticks: { color: '#7a7a7a', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
             },
             plugins: { 
               legend: { display: false },
-              tooltip: {
-                backgroundColor: '#111e30',
-                titleColor: '#a8935a',
-                bodyColor: '#d3dce9',
-                borderColor: 'rgba(168,147,90,0.2)',
-                borderWidth: 1,
-                padding: 12,
-                callbacks: {
-                  // Show every dataset's value for the hovered union in one combined tooltip
-                  label: function(context) {
-                    return `${context.dataset.label}: ${context.formattedValue}`;
-                  }
-                }
-              }
+              tooltip: { backgroundColor: '#111e30', titleColor: '#a8935a', bodyColor: '#d3dce9' }
             }
           }
         });
@@ -830,15 +768,62 @@
       
       document.getElementById('updatedLine').textContent = `Last updated: ${new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'})}`;
     }
-    window.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('topMetrics').innerHTML = '<div class="metric-card" style="grid-column:1/-1;text-align:center; padding:2rem;"><div style="color:#a8935a; font-weight:600;">⏳ Loading data from Google Sheets...</div></div>';
+
+    // PWA Install Logic
+    let deferredPrompt;
+    const installButton = document.getElementById('installButton');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installButton.style.display = 'flex';
+    });
+
+    installButton.addEventListener('click', async () => {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+      if (isIOS && !isStandalone) {
+        alert('To install this app on iOS:\n\n1. Tap the Share button (square with an up arrow) in Safari.\n2. Scroll down and tap "Add to Home Screen".\n3. Tap "Add".');
+        return;
+      }
+      if (!deferredPrompt) {
+        alert('To install this app, use your browser\'s "Install" or "Add to Home Screen" option in the menu.');
+        return;
+      }
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installButton.style.display = 'none';
+    });
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      installButton.style.display = 'none';
+    }
+    
+    async function loadDashboard() {
+      const btn = document.getElementById('btn-refresh');
+      const status = document.getElementById('data-status');
+      if (btn) btn.classList.add('spinning');
+      if (status) status.textContent = 'Refreshing...';
       try {
+        document.getElementById('topMetrics').innerHTML = '<div class="kpi-card" style="grid-column:1/-1;text-align:center; padding:2rem;"><div style="color:var(--gold); font-weight:600;">⏳ Loading data from Google Sheets...</div></div>';
         const { data, totals } = await fetchData();
         render(data, totals);
+        if (status) status.textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
       } catch (e) {
         console.error(e);
-        document.getElementById('topMetrics').innerHTML = '<div class="error-message">Failed to initialize dashboard.</div>';
+        document.getElementById('topMetrics').innerHTML = '<div class="kpi-card" style="grid-column:1/-1;text-align:center; padding:2rem; background:#fff; border:1px solid red;"><div style="color:red; font-weight:600;">Failed to initialize dashboard.</div></div>';
+        if (status) status.textContent = '⚠ Offline';
+      } finally {
+        if (btn) btn.classList.remove('spinning');
       }
+    }
+
+    function manualRefresh() { loadDashboard(); }
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDashboard();
     });
   })();
 </script>
