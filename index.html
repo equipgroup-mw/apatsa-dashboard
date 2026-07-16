@@ -403,7 +403,7 @@
         <div class="chart-sub">Percentage of female members</div>
         <div id="femaleBars"></div>
       </div>
-      <div class="chart-card dark">
+      <div class="chart-card">
         <div class="chart-title">Youth Share Per Union</div>
         <div class="chart-sub">Youth as % of total gender base</div>
         <div id="youthBars"></div>
@@ -496,7 +496,8 @@
 
     async function fetchData() {
       try {
-        const response = await fetch(CSV_URL + '?cb=' + Date.now(), { cache: 'no-store' });
+        // Fixed cache buster appending with & instead of ? to avoid 400 errors
+        const response = await fetch(CSV_URL + '&_cb=' + Date.now(), { cache: 'no-store' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const csvText = await response.text();
         if (!csvText.trim()) throw new Error('Empty CSV');
@@ -727,7 +728,7 @@
       document.getElementById('youthBars').innerHTML = [...withGender].sort((a,b) => pctGender(b.youth,b) - pctGender(a.youth,a)).map(r => {
         const perc = pctGender(r.youth, r);
         return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
-      }).join('') || '<p style="color:var(--sand);">No data.</p>';
+      }).join('') || '<p style="color:var(--olive);">No data.</p>';
       
       document.getElementById('plwdBars').innerHTML = [...withGender].sort((a,b) => pctGender(b.plwd,b) - pctGender(a.plwd,a)).map(r => {
         const perc = pctGender(r.plwd, r);
