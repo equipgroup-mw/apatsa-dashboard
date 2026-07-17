@@ -510,6 +510,7 @@
     // Gender base is strictly Male + Female (for donut chart calculations)
     const totalGender = (r) => r.male + r.female;
     const pctFemale = (r) => totalGender(r) > 0 ? Math.round((r.female / totalGender(r)) * 100) : 0;
+    const pctMale = (r) => totalGender(r) > 0 ? Math.round((r.male / totalGender(r)) * 100) : 0;
     
     // Youth and PLWD % are calculated against TOTAL MEMBERSHIP
     const pctMembership = (part, r) => r.membership > 0 ? Math.round((part / r.membership) * 100) : 0;
@@ -585,7 +586,7 @@
             coops: colIndex.coops >= 0 ? toNum(row[colIndex.coops]) : 0,
             hectarage: colIndex.hectarage >= 0 ? toNum(row[colIndex.hectarage]) : 0,
             largestHect: colIndex.largestHect >= 0 ? toNum(row[colIndex.largestHect]) : 0,
-            largestCoop: colIndex.largestCoop >= 0 ? (row[colIndex.largestCoop] || '').trim() : '',
+            largestCoop: colIndex.largestHect >= 0 ? (row[colIndex.largestCoop] || '').trim() : '',
             smallestHect: colIndex.smallestHect >= 0 ? toNum(row[colIndex.smallestHect]) : 0,
             smallestCoop: colIndex.smallestCoop >= 0 ? (row[colIndex.smallestCoop] || '').trim() : '',
             valueChainsList: colIndex.valueChainsList >= 0 ? (row[colIndex.valueChainsList] || '').trim() : '',
@@ -688,9 +689,9 @@
       const legEl = document.getElementById(legendId);
       if (legEl) {
         legEl.innerHTML = [
-          { label: 'Female', color: '#a8935a', val: totals.female },
-          { label: 'Male', color: '#0d2136', val: totals.male }
-        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${pctFemale({male: totals.male, female: item.val})}%)</small></span></div>`).join('');
+          { label: 'Female', color: '#a8935a', val: totals.female, pct: pctFemale(totals) },
+          { label: 'Male', color: '#0d2136', val: totals.male, pct: pctMale(totals) }
+        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${item.pct}%)</small></span></div>`).join('');
       }
     }
 
