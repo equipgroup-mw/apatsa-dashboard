@@ -522,8 +522,11 @@
     
     // Gender base is strictly Male + Female (for donut chart calculations)
     const totalGender = (r) => r.male + r.female;
-    const pctFemale = (r) => totalGender(r) > 0 ? Math.round((r.female / totalGender(r)) * 100) : 0;
-    const pctMale = (r) => totalGender(r) > 0 ? Math.round((r.male / totalGender(r)) * 100) : 0;
+    
+    // UPDATED: Female % is now calculated as (female / total_membership) * 100
+    const pctFemale = (r) => r.membership > 0 ? Math.round((r.female / r.membership) * 100) : 0;
+    // UPDATED: Male % is also calculated as (male / total_membership) * 100
+    const pctMale = (r) => r.membership > 0 ? Math.round((r.male / r.membership) * 100) : 0;
     
     // Youth and PLWD % are calculated against TOTAL MEMBERSHIP
     const pctMembership = (part, r) => r.membership > 0 ? Math.round((part / r.membership) * 100) : 0;
@@ -655,8 +658,7 @@
       const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','PLWD','Status'].map(h => `<th>${h}</th>`).join('');
       const tableRows = data.map(r => {
         const status = (r.coops>0 && r.membership>0) ? '<span class="badge badge-gold">Active</span>' : (r.coops>0 ? '<span class="badge badge-enrolled">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
-        const tG = totalGender(r);
-        const femDisplay = tG>0 ? `${fmt(r.female)} <small style="color:var(--gold-dim);">(${pctFemale(r)}%)</small>` : '—';
+        const femDisplay = r.membership>0 ? `${fmt(r.female)} <small style="color:var(--gold-dim);">(${pctFemale(r)}%)</small>` : '—';
         const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:var(--navy-lt);">(${pctMembership(r.youth, r)}%)</small>` : '—';
         const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:var(--plum-lt);">(${pctMembership(r.plwd, r)}%)</small>` : '—';
         return `<tr>
@@ -675,7 +677,6 @@
     }
 
     function renderDonut(canvasId, legendId, totals) {
-      const tG = totalGender(totals);
       if (window[canvasId + '_inst']) window[canvasId + '_inst'].destroy();
       const ctx = document.getElementById(canvasId).getContext('2d');
       window[canvasId + '_inst'] = new Chart(ctx, {
@@ -764,21 +765,7 @@
             padding: { right: 30 } // Add padding so data labels don't get cut off
           },
           plugins: { 
-            legend: { display: false },
-            // Custom plugin config (rendered by inline plugin below)
-            datalabels: {
-              anchor: 'end',
-              align: 'end',
-              offset: 4,
-              color: '#0d2136',
-              font: {
-                weight: 'bold',
-                size: 11
-              },
-              formatter: (value, context) => {
-                return value > 0 ? value : ''; // Only show label if value is greater than 0
-              }
-            }
+            legend: { display: false }
           },
           scales: {
             x: { 
@@ -846,7 +833,6 @@
     function render(data, totals) {
       const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
       const enrolled = data.filter(r => r.coops > 0);
-      const tG = totalGender(totals);
 
       // KPI Cards
       document.getElementById('topMetrics').innerHTML = [
@@ -854,7 +840,7 @@
         { label: 'Total cooperatives', value: fmt(totals.coops), sub: 'across all unions', icon: '🤝' },
         { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares in use', icon: '🗺️' },
         { label: 'Total membership', value: fmt(totals.membership), sub: 'members', icon: '👥' },
-        { label: 'Female %', value: pctFemale(totals)+'%', sub: fmt(totals.female)+' of '+fmt(tG)+' gender base', icon: '🚺' },
+        { label: 'Female %', value: pctFemale(totals)+'%', sub: fmt(totals.female)+' of '+fmt(totals.membership)+' members', icon: '🚺' },
         { label: 'Youth %', value: pctMembership(totals.youth, totals)+'%', sub: fmt(totals.youth)+' of '+fmt(totals.membership)+' members', icon: '🌱' },
         { label: 'PLWD %', value: pctMembership(totals.plwd, totals)+'%', sub: fmt(totals.plwd)+' of '+fmt(totals.membership)+' members', icon: '♿' }
       ].map(m => `<div class="kpi-card ${m.accent ? 'accent' : ''}"><span class="icon">${m.icon}</span><div class="value">${m.value}</div><div class="label">${m.label}</div><div class="sub">${m.sub}</div></div>`).join('');
@@ -912,7 +898,7 @@
       // Demographics Bars
       const withGender = withMembers.filter(r => totalGender(r) > 0);
       
-      document.getElementById('femaleBars').innerHTML = [...withGender].sort((a,b) => pctFemale(b) - pctFemale(a)).map(r => {
+      document.getElementById('femaleBars').innerHTML = [...withMembers].sort((a,b) => pctFemale(b) - pctFemale(a)).map(r => {
         const perc = pctFemale(r);
         return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:var(--sand);">No data.</p>';
