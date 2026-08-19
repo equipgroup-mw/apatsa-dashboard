@@ -1000,7 +1000,7 @@
       if (btn) btn.classList.add('spinning');
       if (status) status.textContent = 'Refreshing...';
       try {
-        document.getElementById('topMetrics').innerHTML = '<div class="kpi-card" style="grid-column:1/-1;text-align:center; padding:2rem;"><div style="color:var(--gold); font-weight:600;">⏳ Loading data from Google Sheets...</div></div>';
+        document.getElementById('topMetrics').innerHTML = '<div class="kpi-card" style="grid-column:1/-1;text-align:center; padding:2rem;"><div style="color:var(--gold); font-weight:600;">⏳ Loading data...</div></div>';
         const { data, totals } = await fetchData();
         render(data, totals);
         if (status) status.textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
