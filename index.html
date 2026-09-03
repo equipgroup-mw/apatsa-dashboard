@@ -159,11 +159,11 @@
 
     .chart-wrap {
       position:relative;
-      max-height: 320px;
+      max-height: 400px;
       overflow: hidden;
     }
     .chart-wrap canvas {
-      max-height: 300px !important;
+      max-height: 380px !important;
     }
     .chart-card.span-2 .chart-wrap {
       max-height: 450px;
@@ -383,7 +383,7 @@
       <div class="block-grid" id="largestSmallest"></div>
     </div>
     
-    <!-- New Land Rented Section -->
+    <!-- Land Rented Section -->
     <div class="chart-card dark" style="margin-top: 22px;">
       <div class="chart-title">Land Rented By Unions</div>
       <div class="chart-sub">Total land rented (hectares)</div>
@@ -412,6 +412,14 @@
         <div class="chart-title">Access to Storage Facilities</div>
         <div class="chart-sub">Percentage of cooperatives with storage access</div>
         <div id="storageBars"></div>
+      </div>
+      
+      <div class="chart-card span-2">
+        <div class="chart-title">Harvest Trends</div>
+        <div class="chart-sub">Total harvest volume from 2023 to 2025 (kg)</div>
+        <div class="chart-wrap">
+          <canvas id="harvestTrendsChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -638,6 +646,15 @@
       { district: "Salima", percentage: 20 },
       { district: "Ntchisi", percentage: 20 },
       { district: "Machinga", percentage: 0 }
+    ];
+
+    const HARVEST_TRENDS = [
+      { district: "Machinga", "2023": 105500, "2024": 108000, "2025": 305000 },
+      { district: "Mzuzu", "2023": 779000, "2024": 571000, "2025": 423000 },
+      { district: "Nkhotakota", "2023": 897090, "2024": 548290, "2025": 310000 },
+      { district: "Ntchisi", "2023": 12747.3, "2024": 8351, "2025": 9475 },
+      { district: "Salima", "2023": 222842, "2024": 208443, "2025": 639626 },
+      { district: "Zomba", "2023": 74296, "2024": 65044, "2025": 86941 }
     ];
 
     const MARKET_CHANNELS = [
@@ -947,6 +964,114 @@
       }
     }
 
+    function renderHarvestTrends() {
+      // Remove existing canvas if it exists
+      const existingCanvas = document.getElementById('harvestTrendsChart');
+      if (existingCanvas) {
+        const parent = existingCanvas.parentNode;
+        parent.removeChild(existingCanvas);
+        
+        // Create new canvas
+        const newCanvas = document.createElement('canvas');
+        newCanvas.id = 'harvestTrendsChart';
+        parent.appendChild(newCanvas);
+      }
+      
+      const ctx = document.getElementById('harvestTrendsChart').getContext('2d');
+      const years = ['2023', '2024', '2025'];
+      
+      const colors = [
+        '#0d2136', // Navy
+        '#a8935a', // Gold
+        '#7e2138', // Plum
+        '#81845a', // Olive
+        '#2f3527', // Forest
+        '#8a949e'  // Light Gold
+      ];
+      
+      window.harvestTrendsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: HARVEST_TRENDS.map((district, index) => ({
+            label: district.district,
+            data: years.map(year => district[year]),
+            borderColor: colors[index % colors.length],
+            backgroundColor: colors[index % colors.length],
+            borderWidth: 2.5,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            fill: false
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                color: '#0d2136',
+                font: {
+                  size: 11,
+                  weight: '500'
+                },
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              backgroundColor: '#111e30',
+              titleColor: '#a8935a',
+              bodyColor: '#d3dce9',
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' kg';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(0,0,0,0.05)'
+              },
+              ticks: {
+                color: '#7a7a7a',
+                font: {
+                  size: 12,
+                  weight: '500'
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0,0,0,0.05)'
+              },
+              ticks: {
+                color: '#7a7a7a',
+                callback: function(value) {
+                  return value.toLocaleString() + ' kg';
+                },
+                font: {
+                  size: 11
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+
     function renderProductionData() {
       // Rented Land Bars
       const maxRented = Math.max(...RENTED_LAND.map(r => r.hectares));
@@ -961,7 +1086,7 @@
       document.getElementById('irrigationBars').innerHTML = IRRIGATION_DATA.map(r => `
         <div class="custom-bar-item">
           <div class="custom-bar-label">${r.district}</div>
-          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${r.percentage}%; background: #7e2138;"></div></div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${r.percentage}%; background: linear-gradient(90deg, #7e2138 0%, #a8425c 100%);"></div></div>
           <div class="custom-bar-value">${r.percentage}%</div>
         </div>`).join('');
 
@@ -981,6 +1106,9 @@
           <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${r.percentage}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div>
           <div class="custom-bar-value">${r.percentage}%</div>
         </div>`).join('');
+        
+      // Harvest Trends Chart
+      renderHarvestTrends();
     }
 
     function renderMarketData() {
