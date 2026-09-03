@@ -304,19 +304,6 @@
       #stackedContainer { height: 350px !important; }
       /* Adjust donut chart for mobile */
       .chart-wrap-doughnut canvas { max-width: 200px !important; max-height: 200px !important; }
-      
-      /* --- FIX: Force Value Chain Popularity Chart to expand to fit all labels --- */
-      #vcPopularityChart {
-        max-height: none !important;
-      }
-      .chart-card:has(#vcPopularityChart) .chart-wrap {
-        max-height: none !important;
-        height: 500px !important; /* Gives plenty of vertical room for all bars */
-      }
-      .chart-card:has(#vcPopularityChart) .chart-wrap canvas {
-        max-height: 100% !important;
-        height: 100% !important;
-      }
     }
   </style>
 </head>
@@ -339,7 +326,7 @@
 <nav>
   <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
   <button class="tab-btn" onclick="showTab('unions',this)">All Unions</button>
-  <button class="tab-btn" onclick="showTab('land',this)">Land Use</button>
+  <button class="tab-btn" onclick="showTab('land',this)">Land Ownership</button>
   <button class="tab-btn" onclick="showTab('value',this)">Value Chains</button>
   <button class="tab-btn" onclick="showTab('membership',this)">Membership</button>
   <button class="tab-btn" onclick="showTab('gender',this)">Demographics</button>
@@ -391,11 +378,11 @@
   </div>
 
   <div id="tab-land" class="tab-panel">
-    <p class="section-title">Land Use</p>
+    <p class="section-title">Land Ownership</p>
     <p class="section-sub">Hectarage by union</p>
     <div class="chart-card dark">
       <div class="chart-title">Hectarage by Union</div>
-      <div class="chart-sub">Total land in use (hectares)</div>
+      <div class="chart-sub">Total land owned (hectares)</div>
       <div id="hectareBars"></div>
       <div class="block-grid" id="largestSmallest"></div>
     </div>
@@ -522,11 +509,7 @@
     
     // Gender base is strictly Male + Female (for donut chart calculations)
     const totalGender = (r) => r.male + r.female;
-    
-    // UPDATED: Female % is now calculated as (female / total_membership) * 100
-    const pctFemale = (r) => r.membership > 0 ? Math.round((r.female / r.membership) * 100) : 0;
-    // UPDATED: Male % is also calculated as (male / total_membership) * 100
-    const pctMale = (r) => r.membership > 0 ? Math.round((r.male / r.membership) * 100) : 0;
+    const pctFemale = (r) => totalGender(r) > 0 ? Math.round((r.female / totalGender(r)) * 100) : 0;
     
     // Youth and PLWD % are calculated against TOTAL MEMBERSHIP
     const pctMembership = (part, r) => r.membership > 0 ? Math.round((part / r.membership) * 100) : 0;
@@ -602,7 +585,7 @@
             coops: colIndex.coops >= 0 ? toNum(row[colIndex.coops]) : 0,
             hectarage: colIndex.hectarage >= 0 ? toNum(row[colIndex.hectarage]) : 0,
             largestHect: colIndex.largestHect >= 0 ? toNum(row[colIndex.largestHect]) : 0,
-            largestCoop: colIndex.largestHect >= 0 ? (row[colIndex.largestCoop] || '').trim() : '',
+            largestCoop: colIndex.largestCoop >= 0 ? (row[colIndex.largestCoop] || '').trim() : '',
             smallestHect: colIndex.smallestHect >= 0 ? toNum(row[colIndex.smallestHect]) : 0,
             smallestCoop: colIndex.smallestCoop >= 0 ? (row[colIndex.smallestCoop] || '').trim() : '',
             valueChainsList: colIndex.valueChainsList >= 0 ? (row[colIndex.valueChainsList] || '').trim() : '',
@@ -658,7 +641,8 @@
       const tableHead = ['Union','Coops','Hectarage','Membership','Female','Youth','PLWD','Status'].map(h => `<th>${h}</th>`).join('');
       const tableRows = data.map(r => {
         const status = (r.coops>0 && r.membership>0) ? '<span class="badge badge-gold">Active</span>' : (r.coops>0 ? '<span class="badge badge-enrolled">Enrolled</span>' : '<span class="badge badge-inactive">Pending</span>');
-        const femDisplay = r.membership>0 ? `${fmt(r.female)} <small style="color:var(--gold-dim);">(${pctFemale(r)}%)</small>` : '—';
+        const tG = totalGender(r);
+        const femDisplay = tG>0 ? `${fmt(r.female)} <small style="color:var(--gold-dim);">(${pctFemale(r)}%)</small>` : '—';
         const youthDisplay = r.membership>0 ? `${fmt(r.youth)} <small style="color:var(--navy-lt);">(${pctMembership(r.youth, r)}%)</small>` : '—';
         const plwdDisplay = r.membership>0 ? `${fmt(r.plwd)} <small style="color:var(--plum-lt);">(${pctMembership(r.plwd, r)}%)</small>` : '—';
         return `<tr>
@@ -677,6 +661,7 @@
     }
 
     function renderDonut(canvasId, legendId, totals) {
+      const tG = totalGender(totals);
       if (window[canvasId + '_inst']) window[canvasId + '_inst'].destroy();
       const ctx = document.getElementById(canvasId).getContext('2d');
       window[canvasId + '_inst'] = new Chart(ctx, {
@@ -703,9 +688,9 @@
       const legEl = document.getElementById(legendId);
       if (legEl) {
         legEl.innerHTML = [
-          { label: 'Female', color: '#a8935a', val: totals.female, pct: pctFemale(totals) },
-          { label: 'Male', color: '#0d2136', val: totals.male, pct: pctMale(totals) }
-        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${item.pct}%)</small></span></div>`).join('');
+          { label: 'Female', color: '#a8935a', val: totals.female },
+          { label: 'Male', color: '#0d2136', val: totals.male }
+        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${pctFemale({male: totals.male, female: item.val})}%)</small></span></div>`).join('');
       }
     }
 
@@ -758,48 +743,13 @@
           }]
         },
         options: {
-          indexAxis: 'y', 
-          responsive: true, 
-          maintainAspectRatio: false,
-          layout: {
-            padding: { right: 30 } // Add padding so data labels don't get cut off
-          },
-          plugins: { 
-            legend: { display: false }
-          },
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
           scales: {
-            x: { 
-              beginAtZero: true, 
-              ticks: { color: '#7a7a7a', stepSize: 1 }, 
-              grid: { color: 'rgba(0,0,0,0.05)' } 
-            },
-            y: { 
-              ticks: { color: '#7a7a7a', font: { size: 11 } }, 
-              grid: { display: false } 
-            }
+            x: { beginAtZero: true, ticks: { color: '#7a7a7a', stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { ticks: { color: '#7a7a7a' }, grid: { display: false } }
           }
-        },
-        plugins: [{
-          // Inline custom plugin to draw the data labels manually
-          id: 'customDataLabels',
-          afterDatasetsDraw(chart) {
-            const { ctx, data, scales: { x, y } } = chart;
-            ctx.save();
-            ctx.font = 'bold 11px DM Sans';
-            ctx.fillStyle = '#0d2136';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-
-            data.datasets[0].data.forEach((value, index) => {
-              if (value > 0) {
-                const meta = chart.getDatasetMeta(0);
-                const bar = meta.data[index];
-                ctx.fillText(value, bar.x + 6, bar.y);
-              }
-            });
-            ctx.restore();
-          }
-        }]
+        }
       });
 
       // 3. All Chains Pill Cloud
@@ -833,14 +783,15 @@
     function render(data, totals) {
       const activeUnions = data.filter(r => r.coops > 0 && r.membership > 0);
       const enrolled = data.filter(r => r.coops > 0);
+      const tG = totalGender(totals);
 
       // KPI Cards
       document.getElementById('topMetrics').innerHTML = [
         { label: 'Active unions', value: activeUnions.length, sub: 'with cooperatives & members', icon: '🏛️', accent: true },
         { label: 'Total cooperatives', value: fmt(totals.coops), sub: 'across all unions', icon: '🤝' },
-        { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares in use', icon: '🗺️' },
+        { label: 'Total land (ha)', value: fmt(totals.hectarage), sub: 'hectares owned', icon: '🗺️' },
         { label: 'Total membership', value: fmt(totals.membership), sub: 'members', icon: '👥' },
-        { label: 'Female %', value: pctFemale(totals)+'%', sub: fmt(totals.female)+' of '+fmt(totals.membership)+' members', icon: '🚺' },
+        { label: 'Female %', value: pctFemale(totals)+'%', sub: fmt(totals.female)+' of '+fmt(tG)+' gender base', icon: '🚺' },
         { label: 'Youth %', value: pctMembership(totals.youth, totals)+'%', sub: fmt(totals.youth)+' of '+fmt(totals.membership)+' members', icon: '🌱' },
         { label: 'PLWD %', value: pctMembership(totals.plwd, totals)+'%', sub: fmt(totals.plwd)+' of '+fmt(totals.membership)+' members', icon: '♿' }
       ].map(m => `<div class="kpi-card ${m.accent ? 'accent' : ''}"><span class="icon">${m.icon}</span><div class="value">${m.value}</div><div class="label">${m.label}</div><div class="sub">${m.sub}</div></div>`).join('');
@@ -898,7 +849,7 @@
       // Demographics Bars
       const withGender = withMembers.filter(r => totalGender(r) > 0);
       
-      document.getElementById('femaleBars').innerHTML = [...withMembers].sort((a,b) => pctFemale(b) - pctFemale(a)).map(r => {
+      document.getElementById('femaleBars').innerHTML = [...withGender].sort((a,b) => pctFemale(b) - pctFemale(a)).map(r => {
         const perc = pctFemale(r);
         return `<div class="custom-bar-item"><div class="custom-bar-label">${r.name}</div><div class="custom-bar-track"><div class="custom-bar-fill" style="width:${perc}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div><div class="custom-bar-value">${perc}%</div></div>`;
       }).join('') || '<p style="color:var(--sand);">No data.</p>';
