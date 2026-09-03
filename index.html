@@ -53,7 +53,7 @@
       background: var(--cream); color: var(--navy);
       font-family: 'DM Sans', sans-serif; min-height: 100vh;
       padding-top: var(--sat); padding-bottom: var(--sab);
-      overflow-x: hidden; /* Prevent horizontal scroll globally */
+      overflow-x: hidden;
     }
 
     /* ── HEADER ───────────────────────────────────── */
@@ -67,12 +67,12 @@
     .logo-icon {
       width:36px; height:36px; background:var(--gold); border-radius:8px;
       display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;
-      overflow: hidden; /* Ensure image stays inside rounded corners */
+      overflow: hidden;
     }
     .logo-icon img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Makes the image cover the area neatly */
+      object-fit: cover;
     }
     .logo-text h1 {
       font-family:'Playfair Display',serif; font-size:clamp(14px,3vw,19px);
@@ -142,14 +142,13 @@
     /* ── CHARTS ───────────────────────────────────── */
     .chart-grid { display:grid; gap:14px; margin-bottom:22px; }
     .chart-grid.cols-2 { grid-template-columns:repeat(auto-fit,minmax(460px,1fr)); }
-    /* Force 3 columns for side-by-side comparison, collapsing only on small mobile */
     .chart-grid.cols-3-force { grid-template-columns: repeat(3, 1fr); }
 
     .chart-card {
       background:#fff; border-radius:12px; padding:18px;
       border:1px solid var(--sand); box-shadow:0 2px 8px rgba(13,33,54,.05);
-      max-width: 100%; /* Prevent overflow */
-      min-width: 0; /* Allow grid item to shrink correctly */
+      max-width: 100%;
+      min-width: 0;
     }
     .chart-card.dark  { background:var(--navy); border-color:rgba(168,147,90,.2); }
     .chart-card.span-2 { grid-column:1/-1; }
@@ -196,7 +195,6 @@
     .donut-legend div:last-child { border-bottom: none; }
     .legend-left { display: flex; align-items: center; gap: 8px; color: var(--forest); }
     .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
-    /* Fixed contrast for white background card */
     .legend-right { font-weight: 600; color: var(--navy); }
     .legend-right small { color: var(--olive); }
 
@@ -293,16 +291,12 @@
       .chart-grid.cols-2, .chart-grid.cols-3-force { grid-template-columns: 1fr; }
       .block-grid { grid-template-columns: 1fr; }
       .custom-bar-label { width: 90px; font-size: 0.8rem; }
-      /* Fix table overflow on mobile */
       td { white-space: normal; word-break: break-word; }
-      /* Fix chart heights */
       .chart-wrap { max-height: 250px; }
       .chart-wrap canvas { max-height: 230px !important; }
       .chart-card.span-2 .chart-wrap { max-height: 300px; }
       .chart-card.span-2 .chart-wrap canvas { max-height: 280px !important; }
-      /* Fix stacked chart container override */
       #stackedContainer { height: 350px !important; }
-      /* Adjust donut chart for mobile */
       .chart-wrap-doughnut canvas { max-width: 200px !important; max-height: 200px !important; }
     }
   </style>
@@ -327,9 +321,11 @@
   <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
   <button class="tab-btn" onclick="showTab('unions',this)">All Unions</button>
   <button class="tab-btn" onclick="showTab('land',this)">Land Ownership</button>
+  <button class="tab-btn" onclick="showTab('production',this)">Production</button>
   <button class="tab-btn" onclick="showTab('value',this)">Value Chains</button>
   <button class="tab-btn" onclick="showTab('membership',this)">Membership</button>
   <button class="tab-btn" onclick="showTab('gender',this)">Demographics</button>
+  <button class="tab-btn" onclick="showTab('market',this)">Market & Business</button>
 </nav>
 
 <main>
@@ -385,6 +381,38 @@
       <div class="chart-sub">Total land owned (hectares)</div>
       <div id="hectareBars"></div>
       <div class="block-grid" id="largestSmallest"></div>
+    </div>
+    
+    <!-- New Land Rented Section -->
+    <div class="chart-card dark" style="margin-top: 22px;">
+      <div class="chart-title">Land Rented By Unions</div>
+      <div class="chart-sub">Total land rented (hectares)</div>
+      <div id="rentedLandBars"></div>
+    </div>
+  </div>
+
+  <div id="tab-production" class="tab-panel">
+    <p class="section-title">Production Indicators</p>
+    <p class="section-sub">Access to irrigation, certified seed, and storage facilities</p>
+    
+    <div class="chart-grid cols-2">
+      <div class="chart-card dark span-2">
+        <div class="chart-title">Access to Irrigation</div>
+        <div class="chart-sub">Percentage of cooperatives with irrigation access</div>
+        <div id="irrigationBars"></div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-title">Adoption of Certified Seed</div>
+        <div class="chart-sub">Number of cooperatives using certified seed</div>
+        <div id="certifiedSeedBars"></div>
+      </div>
+      
+      <div class="chart-card dark">
+        <div class="chart-title">Access to Storage Facilities</div>
+        <div class="chart-sub">Percentage of cooperatives with storage access</div>
+        <div id="storageBars"></div>
+      </div>
     </div>
   </div>
 
@@ -459,6 +487,85 @@
     </div>
   </div>
 
+  <div id="tab-market" class="tab-panel">
+    <p class="section-title">Market and Business Performance</p>
+    <p class="section-sub">Market channels, formal market access, assets, and record keeping</p>
+
+    <div class="chart-card span-2" style="margin-bottom: 22px;">
+      <div class="chart-title">Market Channels by Cooperative</div>
+      <div class="chart-sub">Distribution of market channels across cooperatives</div>
+      <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.8rem;">
+        <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#0d2136;"></span> Wholesaler</span>
+        <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#a8935a;"></span> Supermarket</span>
+        <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#d8d0c6;"></span> Direct to Consumer</span>
+        <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#81845a;"></span> Processor</span>
+        <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#7e2138;"></span> Exporter</span>
+        <span style="display:flex; align-items:center; gap:0.4rem;"><span class="legend-dot" style="background:#c4ac74;"></span> Farmers Market</span>
+      </div>
+      <div id="marketChannelsContainer" style="position: relative;"><canvas id="marketChannelsChart"></canvas></div>
+    </div>
+
+    <div class="chart-card span-2" style="margin-bottom: 22px;">
+      <div class="chart-title">Access to Formal Markets</div>
+      <div class="chart-sub">Off-take agreements and regular buyers by district</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>District</th>
+              <th>Number of Coops</th>
+              <th>Off-take Agreements</th>
+              <th>% Offtake</th>
+              <th>Regular Buyers</th>
+              <th>% Regular Buyers</th>
+            </tr>
+          </thead>
+          <tbody id="formalMarketsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="chart-grid cols-2">
+      <div class="chart-card">
+        <div class="chart-title">Assets</div>
+        <div class="chart-sub">Types of assets reported by district</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>District</th>
+                <th>Types of Assets Reported</th>
+              </tr>
+            </thead>
+            <tbody id="assetsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Record Keeping</div>
+        <div class="chart-sub">Financial records, audits, and loans by district</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>District</th>
+                <th>Coops</th>
+                <th>Keep Financial Records</th>
+                <th>Audited Records</th>
+                <th>Received Loans</th>
+                <th>% Keeping Records</th>
+                <th>% Audited</th>
+                <th>% with Loans</th>
+              </tr>
+            </thead>
+            <tbody id="recordKeepingTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="updated" style="text-align: right; color: var(--olive); font-size: 0.75rem; margin-top: 3rem; font-weight: 500;" id="updatedLine"></div>
 </main>
 
@@ -500,6 +607,75 @@
       { name:"Machinga Union", coops:0, hectarage:0, largestHect:0, largestCoop:"", smallestHect:0, smallestCoop:"", valueChainsList:"-", membership:0, male:0, female:0, youth:0, plwd:0 }
     ];
 
+    // Hardcoded data for new features
+    const RENTED_LAND = [
+      { district: "Nkhotakota", hectares: 380 },
+      { district: "Salima", hectares: 340 },
+      { district: "Zomba", hectares: 300 }
+    ];
+
+    const IRRIGATION_DATA = [
+      { district: "Zomba", percentage: 100 },
+      { district: "Ntchisi", percentage: 80 },
+      { district: "Nkhotakota", percentage: 43 },
+      { district: "Machinga", percentage: 40 },
+      { district: "Salima", percentage: 40 },
+      { district: "Mzuzu", percentage: 0 }
+    ];
+
+    const CERTIFIED_SEED_DATA = [
+      { district: "Zomba", count: 8 },
+      { district: "Nkhotakota", count: 6 },
+      { district: "Ntchisi", count: 4 },
+      { district: "Salima", count: 4 },
+      { district: "Mzuzu", count: 3 }
+    ];
+
+    const STORAGE_DATA = [
+      { district: "Zomba", percentage: 38 },
+      { district: "Mzuzu", percentage: 33 },
+      { district: "Nkhotakota", percentage: 29 },
+      { district: "Salima", percentage: 20 },
+      { district: "Ntchisi", percentage: 20 },
+      { district: "Machinga", percentage: 0 }
+    ];
+
+    const MARKET_CHANNELS = [
+      { district: "Nkhotakota", Wholesaler: 1, Supermarket: 0, "Direct to consumer": 1, Processor: 1, Exporter: 0, "Farmers market": 2 },
+      { district: "Ntchisi", Wholesaler: 0, Supermarket: 0, "Direct to consumer": 0, Processor: 3, Exporter: 2, "Farmers market": 0 },
+      { district: "Zomba", Wholesaler: 0, Supermarket: 0, "Direct to consumer": 4, Processor: 0, Exporter: 0, "Farmers market": 0 },
+      { district: "Salima", Wholesaler: 0, Supermarket: 0, "Direct to consumer": 1, Processor: 0, Exporter: 0, "Farmers market": 1 },
+      { district: "Mzuzu", Wholesaler: 0, Supermarket: 0, "Direct to consumer": 0, Processor: 0, Exporter: 1, "Farmers market": 0 },
+      { district: "Machinga", Wholesaler: 1, Supermarket: 0, "Direct to consumer": 0, Processor: 0, Exporter: 0, "Farmers market": 0 }
+    ];
+
+    const FORMAL_MARKETS = [
+      { district: "Salima", coops: 5, offtake: 5, pctOfftake: 100, regularBuyers: 2, pctRegularBuyers: 40 },
+      { district: "Ntchisi", coops: 5, offtake: 4, pctOfftake: 80, regularBuyers: 4, pctRegularBuyers: 80 },
+      { district: "Zomba", coops: 8, offtake: 2, pctOfftake: 25, regularBuyers: 6, pctRegularBuyers: 75 },
+      { district: "Mzuzu", coops: 3, offtake: 2, pctOfftake: 67, regularBuyers: 3, pctRegularBuyers: 100 },
+      { district: "Nkhotakota", coops: 7, offtake: 4, pctOfftake: 57, regularBuyers: 4, pctRegularBuyers: 57 },
+      { district: "Machinga", coops: 5, offtake: 0, pctOfftake: 0, regularBuyers: 1, pctRegularBuyers: 20 }
+    ];
+
+    const ASSETS_DATA = [
+      { district: "Nkhotakota", assets: "Warehouses" },
+      { district: "Zomba", assets: "Warehouse, milling machine" },
+      { district: "Mzuzu", assets: "Warehouse" },
+      { district: "Machinga", assets: "Warehouse" },
+      { district: "Salima", assets: "Warehouses; tractor; rice mill" },
+      { district: "Ntchisi", assets: "Warehouse" }
+    ];
+
+    const RECORD_KEEPING = [
+      { district: "Zomba", coops: 8, keepRecords: 8, audited: 0, loans: 6, pctRecords: 100, pctAudited: 0, pctLoans: 75 },
+      { district: "Nkhotakota", coops: 7, keepRecords: 6, audited: 3, loans: 3, pctRecords: 86, pctAudited: 43, pctLoans: 43 },
+      { district: "Mzuzu", coops: 3, keepRecords: 3, audited: 1, loans: 2, pctRecords: 100, pctAudited: 33, pctLoans: 67 },
+      { district: "Machinga", coops: 5, keepRecords: 1, audited: 0, loans: 3, pctRecords: 20, pctAudited: 0, pctLoans: 60 },
+      { district: "Salima", coops: 5, keepRecords: 5, audited: 2, loans: 3, pctRecords: 100, pctAudited: 40, pctLoans: 60 },
+      { district: "Ntchisi", coops: 5, keepRecords: 5, audited: 3, loans: 1, pctRecords: 100, pctAudited: 60, pctLoans: 20 }
+    ];
+
     const toNum = (val) => {
       if (val === null || val === undefined || val === '') return 0;
       let num = Number(String(val).replace(/[^0-9.-]/g, ''));
@@ -507,11 +683,8 @@
     };
     const fmt = (val) => typeof val === 'number' ? val.toLocaleString() : val;
     
-    // Gender base is strictly Male + Female (for donut chart calculations)
     const totalGender = (r) => r.male + r.female;
     const pctFemale = (r) => totalGender(r) > 0 ? Math.round((r.female / totalGender(r)) * 100) : 0;
-    
-    // Youth and PLWD % are calculated against TOTAL MEMBERSHIP
     const pctMembership = (part, r) => r.membership > 0 ? Math.round((part / r.membership) * 100) : 0;
 
     function parseCSV(text) {
@@ -617,7 +790,6 @@
       }
     }
 
-    // Helper to extract unique chains from a raw list (ignoring hyphens/empty)
     function extractUniqueChains(rawList) {
       if (!rawList || rawList === '-') return [];
       const chains = new Set();
@@ -701,9 +873,8 @@
       const vcKpisEl = document.getElementById('vcKpis');
       const vcUnionBreakdownEl = document.getElementById('vcUnionBreakdown');
 
-      // Accurately calculate union counts per chain
       const chainCounts = {};
-      uniqueChains.forEach(c => chainCounts[c] = 0); // Initialize
+      uniqueChains.forEach(c => chainCounts[c] = 0);
       
       activeUnions.forEach(r => {
         const unionChains = extractUniqueChains(r.valueChainsList);
@@ -714,7 +885,6 @@
         });
       });
 
-      // 1. KPI Cards
       if (vcKpisEl) {
         const mostCommon = Object.keys(chainCounts).length > 0 ? Object.keys(chainCounts).reduce((a, b) => chainCounts[a] > chainCounts[b] ? a : b) : '—';
 
@@ -725,7 +895,6 @@
         `;
       }
 
-      // 2. Popularity Chart
       if (window.vcPopChart) window.vcPopChart.destroy();
       const popularityCtx = document.getElementById('vcPopularityChart').getContext('2d');
       const sortedChains = Object.keys(chainCounts).sort((a, b) => chainCounts[b] - chainCounts[a]);
@@ -752,7 +921,6 @@
         }
       });
 
-      // 3. All Chains Pill Cloud
       if (vcContainer) {
         if (uniqueChains.length) {
           vcContainer.innerHTML = uniqueChains.map(v => `<span class="vc-pill">${v}</span>`).join('');
@@ -761,7 +929,6 @@
         }
       }
 
-      // 4. Union Breakdown List
       if (vcUnionBreakdownEl) {
         if (activeUnions.length === 0) {
           vcUnionBreakdownEl.innerHTML = '<p style="color:var(--olive); text-align:center; padding:20px;">No active union data available.</p>';
@@ -778,6 +945,119 @@
           }).join('');
         }
       }
+    }
+
+    function renderProductionData() {
+      // Rented Land Bars
+      const maxRented = Math.max(...RENTED_LAND.map(r => r.hectares));
+      document.getElementById('rentedLandBars').innerHTML = RENTED_LAND.map(r => `
+        <div class="custom-bar-item">
+          <div class="custom-bar-label">${r.district}</div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${(r.hectares/maxRented)*100}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div>
+          <div class="custom-bar-value">${r.hectares} ha</div>
+        </div>`).join('');
+
+      // Irrigation Bars
+      document.getElementById('irrigationBars').innerHTML = IRRIGATION_DATA.map(r => `
+        <div class="custom-bar-item">
+          <div class="custom-bar-label">${r.district}</div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${r.percentage}%; background: #7e2138;"></div></div>
+          <div class="custom-bar-value">${r.percentage}%</div>
+        </div>`).join('');
+
+      // Certified Seed Bars
+      const maxSeed = Math.max(...CERTIFIED_SEED_DATA.map(r => r.count));
+      document.getElementById('certifiedSeedBars').innerHTML = CERTIFIED_SEED_DATA.map(r => `
+        <div class="custom-bar-item">
+          <div class="custom-bar-label">${r.district}</div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${(r.count/maxSeed)*100}%; background: linear-gradient(90deg, #0d2136 0%, #1c3a57 100%);"></div></div>
+          <div class="custom-bar-value">${r.count}</div>
+        </div>`).join('');
+
+      // Storage Bars
+      document.getElementById('storageBars').innerHTML = STORAGE_DATA.map(r => `
+        <div class="custom-bar-item">
+          <div class="custom-bar-label">${r.district}</div>
+          <div class="custom-bar-track"><div class="custom-bar-fill" style="width:${r.percentage}%; background: linear-gradient(90deg, #a8935a 0%, #c8b582 100%);"></div></div>
+          <div class="custom-bar-value">${r.percentage}%</div>
+        </div>`).join('');
+    }
+
+    function renderMarketData() {
+      // Market Channels Stacked Chart
+      if (window.marketChannelsInstance) window.marketChannelsInstance.destroy();
+      
+      const sortedMarket = [...MARKET_CHANNELS].sort((a, b) => {
+        const totalA = Object.values(a).reduce((sum, val) => typeof val === 'number' ? sum + val : sum, 0);
+        const totalB = Object.values(b).reduce((sum, val) => typeof val === 'number' ? sum + val : sum, 0);
+        return totalB - totalA;
+      });
+      
+      const container = document.getElementById('marketChannelsContainer');
+      container.style.height = Math.max(320, sortedMarket.length * 60) + 'px';
+      
+      const ctx = document.getElementById('marketChannelsChart').getContext('2d');
+      window.marketChannelsInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sortedMarket.map(r => r.district),
+          datasets: [
+            { label: 'Wholesaler', data: sortedMarket.map(r => r.Wholesaler), backgroundColor: '#0d2136', borderRadius: 2 },
+            { label: 'Supermarket', data: sortedMarket.map(r => r.Supermarket), backgroundColor: '#a8935a', borderRadius: 2 },
+            { label: 'Direct to consumer', data: sortedMarket.map(r => r['Direct to consumer']), backgroundColor: '#d8d0c6', borderRadius: 2 },
+            { label: 'Processor', data: sortedMarket.map(r => r.Processor), backgroundColor: '#81845a', borderRadius: 2 },
+            { label: 'Exporter', data: sortedMarket.map(r => r.Exporter), backgroundColor: '#7e2138', borderRadius: 2 },
+            { label: 'Farmers market', data: sortedMarket.map(r => r['Farmers market']), backgroundColor: '#c4ac74', borderRadius: 2 }
+          ]
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false, axis: 'y' },
+          scales: {
+            x: { stacked: true, ticks: { color: '#7a7a7a', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { stacked: true, ticks: { color: '#7a7a7a', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+          },
+          plugins: { 
+            legend: { display: false },
+            tooltip: { backgroundColor: '#111e30', titleColor: '#a8935a', bodyColor: '#d3dce9' }
+          }
+        }
+      });
+
+      // Formal Markets Table (sorted by % Regular Buyers)
+      const sortedFormal = [...FORMAL_MARKETS].sort((a, b) => b.pctRegularBuyers - a.pctRegularBuyers);
+      document.getElementById('formalMarketsTable').innerHTML = sortedFormal.map(r => `
+        <tr>
+          <td style="font-weight:600;color:var(--navy);">${r.district}</td>
+          <td>${r.coops}</td>
+          <td>${r.offtake}</td>
+          <td>${r.pctOfftake}%</td>
+          <td>${r.regularBuyers}</td>
+          <td>${r.pctRegularBuyers}%</td>
+        </tr>
+      `).join('');
+
+      // Assets Table
+      document.getElementById('assetsTable').innerHTML = ASSETS_DATA.map(r => `
+        <tr>
+          <td style="font-weight:600;color:var(--navy);">${r.district}</td>
+          <td>${r.assets}</td>
+        </tr>
+      `).join('');
+
+      // Record Keeping Table
+      document.getElementById('recordKeepingTable').innerHTML = RECORD_KEEPING.map(r => `
+        <tr>
+          <td style="font-weight:600;color:var(--navy);">${r.district}</td>
+          <td>${r.coops}</td>
+          <td>${r.keepRecords}</td>
+          <td>${r.audited}</td>
+          <td>${r.loans}</td>
+          <td>${r.pctRecords}%</td>
+          <td>${r.pctAudited}%</td>
+          <td>${r.pctLoans}%</td>
+        </tr>
+      `).join('');
     }
 
     function render(data, totals) {
@@ -895,6 +1175,10 @@
           }
         });
       }
+      
+      // Render Production and Market Data
+      renderProductionData();
+      renderMarketData();
       
       document.getElementById('updatedLine').textContent = `Last updated: ${new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'})}`;
     }
