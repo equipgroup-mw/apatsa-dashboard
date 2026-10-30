@@ -330,6 +330,7 @@
   <button class="tab-btn" onclick="showTab('value',this)">Value Chains</button>
   <button class="tab-btn" onclick="showTab('membership',this)">Membership</button>
   <button class="tab-btn" onclick="showTab('gender',this)">Demographics</button>
+  <button class="tab-btn" onclick="showTab('weo',this)">WEO</button>
 </nav>
 
 <main>
@@ -459,6 +460,74 @@
     </div>
   </div>
 
+  <!-- ============================== -->
+  <!-- ===== WEO TAB ================ -->
+  <!-- ============================== -->
+  <div id="tab-weo" class="tab-panel">
+    <p class="section-title">WEO & Youth in Work</p>
+    <p class="section-sub">Workforce Entry & Opportunities program participants <span id="weoStatus" style="float:right; color: var(--gold); font-weight: 600;"></span></p>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="weoKpis"></div>
+
+    <!-- Charts Row 1: Gender donut + Category comparison -->
+    <div class="chart-grid cols-2">
+      <div class="chart-card">
+        <div class="chart-title">Overall Gender Breakdown</div>
+        <div class="chart-sub">Combined across all four WEO categories</div>
+        <div class="chart-wrap-doughnut">
+          <canvas id="weoDonutChart"></canvas>
+          <div id="weoDonutLegend" class="donut-legend"></div>
+        </div>
+      </div>
+      <div class="chart-card dark">
+        <div class="chart-title">Category Comparison</div>
+        <div class="chart-sub">Male vs Female across the four WEO categories</div>
+        <div class="chart-wrap"><canvas id="weoCategoryChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2: District + Value chain distribution (full width) -->
+    <div class="chart-grid cols-2">
+      <div class="chart-card span-2">
+        <div class="chart-title">Distribution by District</div>
+        <div class="chart-sub">Participant counts per district (all categories combined)</div>
+        <div class="chart-wrap"><canvas id="weoDistrictChart"></canvas></div>
+      </div>
+      <div class="chart-card span-2">
+        <div class="chart-title">Value Chain Distribution</div>
+        <div class="chart-sub">Participants per value chain across all categories</div>
+        <div class="chart-wrap"><canvas id="weoValueChainChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Detail Tables -->
+    <div class="chart-grid cols-2">
+      <div class="chart-card span-2">
+        <div class="chart-title">Primary WEO Participants</div>
+        <div class="chart-sub">Detailed list of primary WEO participants</div>
+        <div class="table-wrap"><table id="weoTablePrimaryWEO"></table></div>
+      </div>
+      <div class="chart-card span-2">
+        <div class="chart-title">Primary Youth in Work</div>
+        <div class="chart-sub">Youth transitioning into work</div>
+        <div class="table-wrap"><table id="weoTablePrimaryYIW"></table></div>
+      </div>
+      <div class="chart-card span-2">
+        <div class="chart-title">Secondary WEO</div>
+        <div class="chart-sub">Employers under the WEO program</div>
+        <div class="table-wrap"><table id="weoTableSecondaryWEO"></table></div>
+      </div>
+      <div class="chart-card span-2">
+        <div class="chart-title">Secondary Youth in Work</div>
+        <div class="chart-sub">Youth employed by secondary WEO participants</div>
+        <div class="table-wrap"><table id="weoTableSecondaryYIW"></table></div>
+      </div>
+    </div>
+
+    <div class="updated" style="text-align: right; color: var(--olive); font-size: 0.75rem; margin-top: 3rem; font-weight: 500;" id="weoUpdated"></div>
+  </div>
+
   <div class="updated" style="text-align: right; color: var(--olive); font-size: 0.75rem; margin-top: 3rem; font-weight: 500;" id="updatedLine"></div>
 </main>
 
@@ -483,6 +552,11 @@
     document.getElementById('tab-' + id).classList.add('active');
     if (btn) btn.classList.add('active');
     setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+    // Lazy-load WEO data the first time the WEO tab is opened
+    if (id === 'weo' && !window.weoLoaded) {
+      window.weoLoaded = true;
+      if (typeof window.loadWEOData === 'function') window.loadWEOData();
+    }
   }
 
   (function() {
@@ -687,10 +761,11 @@
       });
       const legEl = document.getElementById(legendId);
       if (legEl) {
+        const total = totals.male + totals.female;
         legEl.innerHTML = [
           { label: 'Female', color: '#a8935a', val: totals.female },
           { label: 'Male', color: '#0d2136', val: totals.male }
-        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${pctFemale({male: totals.male, female: item.val})}%)</small></span></div>`).join('');
+        ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${total>0 ? Math.round(item.val/total*100) : 0}%)</small></span></div>`).join('');
       }
     }
 
@@ -899,6 +974,431 @@
       document.getElementById('updatedLine').textContent = `Last updated: ${new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'})}`;
     }
 
+    // =================================================================
+    // ============== WEO TAB LOGIC ====================================
+    // =================================================================
+
+    // >>> PASTE YOUR 4 CSV URLs HERE <<<
+    // Each should be a Google Sheets "Publish to web > CSV" link
+    // (or any publicly-fetchable CSV URL).
+    const WEO_CSV_URLS = {
+      primaryWEO:   "PASTE_PRIMARY_WEO_CSV_URL_HERE",
+      primaryYIW:   "PASTE_PRIMARY_YIW_CSV_URL_HERE",
+      secondaryWEO: "PASTE_SECONDARY_WEO_CSV_URL_HERE",
+      secondaryYIW: "PASTE_SECONDARY_YIW_CSV_URL_HERE"
+    };
+
+    // Fallback summary used when a CSV can't be fetched (your known totals)
+    const WEO_FALLBACK_SUMMARY = {
+      primaryWEO:   { total: 689, male: 300, female: 389 },
+      primaryYIW:   { total: 232, male: 139, female:  93 },
+      secondaryWEO: { total:  41, male:  32, female:   9 },
+      secondaryYIW: { total:  10, male:   8, female:   2 }
+    };
+
+    const WEO_LABELS = {
+      primaryWEO:   'Primary WEO',
+      primaryYIW:   'Primary Youth in Work',
+      secondaryWEO: 'Secondary WEO',
+      secondaryYIW: 'Secondary Youth in Work'
+    };
+
+    const WEO_ICONS = {
+      primaryWEO:   '👨‍🌾',
+      primaryYIW:   '💼',
+      secondaryWEO: '🌱',
+      secondaryYIW: '🤝'
+    };
+
+    // Find ALL column indices that match a regex (for headers that repeat,
+    // e.g. "Value Chain" appears 3 times, "Type of intervention/Service" twice)
+    function findAllIndices(headers, regex) {
+      const indices = [];
+      headers.forEach((h, i) => { if (regex.test(h)) indices.push(i); });
+      return indices;
+    }
+
+    function isBlank(v) {
+      if (v === null || v === undefined) return true;
+      const s = String(v).trim().toLowerCase();
+      return s === '' || s === '-' || s === 'n/a' || s === 'na' || s === 'none';
+    }
+
+    async function fetchWEOCategory(url, fallbackKey) {
+      // If URL is still the placeholder, go straight to fallback
+      if (!url || url.indexOf('PASTE_') === 0) {
+        return { records: [], summary: WEO_FALLBACK_SUMMARY[fallbackKey], offline: true };
+      }
+      try {
+        const response = await fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cb=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const csvText = await response.text();
+        if (!csvText.trim()) throw new Error('Empty CSV');
+        const rows = parseCSV(csvText);
+        if (rows.length < 2) throw new Error('No data rows');
+        const headers = rows[0].map(h => h.toLowerCase().trim());
+
+        // --- Column detection (regex based, tolerant to header wording) ---
+        // Partner: "Name of partner" (excludes participant/employer columns)
+        const partnerIdx = headers.findIndex(h => /name.*partner|^partner$/i.test(h));
+        // Employer (secondary only): "Name of particpant employing youth"
+        const employerIdx = headers.findIndex(h => /name/i.test(h) && /employ/i.test(h));
+        // Participant / youth name (primary: "Name of the Participant reached"; secondary: "Name of the youth in work")
+        const participantNameIdx = headers.findIndex(h => {
+          if (!/name/i.test(h)) return false;
+          if (/partner/i.test(h)) return false;
+          if (/employ/i.test(h)) return false;
+          return /participant|youth|particpant/i.test(h);
+        });
+        const ageIdx        = headers.findIndex(h => /^age$/i.test(h));
+        const genderIdx     = headers.findIndex(h => /^gender$|^sex$/i.test(h));
+        const disabilityIdx = headers.findIndex(h => /disability|pwd|disab/i.test(h));
+        const refugeeIdx    = headers.findIndex(h => /refugee/i.test(h));
+        const districtIdx   = headers.findIndex(h => /^district$/i.test(h));
+        const epaIdx        = headers.findIndex(h => /^epa$/i.test(h));
+        const taIdx         = headers.findIndex(h => /^ta$/i.test(h));
+        const gvhIdx        = headers.findIndex(h => /gvh/i.test(h));
+        const villageIdx    = headers.findIndex(h => /^village$/i.test(h));
+        const yearIdx       = headers.findIndex(h => /^year$/i.test(h));
+        const quarterIdx    = headers.findIndex(h => /^quarter$/i.test(h));
+        const interventionIdx    = headers.findIndex(h => /type.*intervention/i.test(h));
+        const otherInterventionIdx = headers.findIndex(h => /other.*specify/i.test(h));
+        const vcIndices     = findAllIndices(headers, /value\s*chain/i);
+        const jobPathwayIdx = headers.findIndex(h => /job\s*pathway/i.test(h));
+        const categoryWorkIdx = headers.findIndex(h => /category.*work/i.test(h));
+        const incomeBeforeIdx = headers.findIndex(h => /income.*before/i.test(h));
+        const incomeAfterIdx  = headers.findIndex(h => /income.*after/i.test(h));
+        const transitionIdx = headers.findIndex(h => /transition/i.test(h) && /work/i.test(h));
+
+        const records = [];
+        let male = 0, female = 0;
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length === 0) continue;
+          // Skip fully-blank rows
+          const nonEmpty = row.some(c => c && c.trim());
+          if (!nonEmpty) continue;
+
+          // Participant name — skip row if completely missing name AND few fields populated
+          const participantName = participantNameIdx >= 0 ? (row[participantNameIdx] || '').trim() : '';
+          if (!participantName && row.filter(c => c && c.trim()).length < 3) continue;
+
+          // Gender detection
+          const genderRaw = genderIdx >= 0 ? (row[genderIdx] || '').trim().toLowerCase() : '';
+          const isMale   = /^(m|male|man|boy)$/i.test(genderRaw);
+          const isFemale = /^(f|female|woman|girl|fem)$/i.test(genderRaw);
+          if (isMale) male++;
+          else if (isFemale) female++;
+
+          // Combine all non-empty value chain columns
+          const valueChains = vcIndices
+            .map(idx => (row[idx] || '').trim())
+            .filter(v => !isBlank(v));
+
+          records.push({
+            partner:      partnerIdx >= 0 ? (row[partnerIdx] || '').trim() : '',
+            employer:     employerIdx >= 0 ? (row[employerIdx] || '').trim() : '',
+            name:         participantName,
+            age:          ageIdx >= 0 ? (row[ageIdx] || '').trim() : '',
+            gender:       genderIdx >= 0 ? (row[genderIdx] || '').trim() : '',
+            disability:   disabilityIdx >= 0 ? (row[disabilityIdx] || '').trim() : '',
+            refugee:      refugeeIdx >= 0 ? (row[refugeeIdx] || '').trim() : '',
+            district:     districtIdx >= 0 ? (row[districtIdx] || '').trim() : '',
+            epa:          epaIdx >= 0 ? (row[epaIdx] || '').trim() : '',
+            ta:           taIdx >= 0 ? (row[taIdx] || '').trim() : '',
+            gvh:          gvhIdx >= 0 ? (row[gvhIdx] || '').trim() : '',
+            village:      villageIdx >= 0 ? (row[villageIdx] || '').trim() : '',
+            year:         yearIdx >= 0 ? (row[yearIdx] || '').trim() : '',
+            quarter:      quarterIdx >= 0 ? (row[quarterIdx] || '').trim() : '',
+            intervention: interventionIdx >= 0 ? (row[interventionIdx] || '').trim() : '',
+            otherIntervention: otherInterventionIdx >= 0 ? (row[otherInterventionIdx] || '').trim() : '',
+            valueChains,
+            jobPathway:    jobPathwayIdx >= 0 ? (row[jobPathwayIdx] || '').trim() : '',
+            categoryOfWork: categoryWorkIdx >= 0 ? (row[categoryWorkIdx] || '').trim() : '',
+            incomeBefore:  incomeBeforeIdx >= 0 ? (row[incomeBeforeIdx] || '').trim() : '',
+            incomeAfter:   incomeAfterIdx >= 0 ? (row[incomeAfterIdx] || '').trim() : '',
+            transition:    transitionIdx >= 0 ? (row[transitionIdx] || '').trim() : ''
+          });
+        }
+
+        return {
+          records,
+          summary: { total: records.length, male, female }
+        };
+      } catch (err) {
+        console.warn(`WEO fetch failed for ${fallbackKey}:`, err.message);
+        return { records: [], summary: WEO_FALLBACK_SUMMARY[fallbackKey], offline: true };
+      }
+    }
+
+    function renderWEOTable(tableId, records, isSecondary) {
+      const tableEl = document.getElementById(tableId);
+      if (!tableEl) return;
+      if (!records || !records.length) {
+        tableEl.innerHTML = '<thead><tr><th>No data</th></tr></thead><tbody><tr><td style="text-align:center;color:var(--olive);padding:20px;">No records available</td></tr></tbody>';
+        return;
+      }
+
+      let headers, rowsHtml;
+      if (isSecondary) {
+        headers = ['#', 'Partner', 'Employer', 'Youth Name', 'Age', 'Gender', 'District', 'Village', 'Value Chain', 'Job Pathway', 'Income Before (MK)', 'Income After (MK)'];
+        rowsHtml = records.map((r, i) => `<tr>
+          <td>${i + 1}</td>
+          <td>${r.partner || '—'}</td>
+          <td>${r.employer || '—'}</td>
+          <td style="font-weight:600;color:var(--navy);">${r.name || '—'}</td>
+          <td>${r.age || '—'}</td>
+          <td>${r.gender || '—'}</td>
+          <td>${r.district || '—'}</td>
+          <td>${r.village || '—'}</td>
+          <td>${r.valueChains.join(', ') || '—'}</td>
+          <td>${r.jobPathway || '—'}</td>
+          <td>${r.incomeBefore || '—'}</td>
+          <td>${r.incomeAfter || '—'}</td>
+        </tr>`).join('');
+      } else {
+        headers = ['#', 'Partner', 'Participant', 'Age', 'Gender', 'District', 'Village', 'Value Chain', 'Intervention', 'Job Pathway'];
+        rowsHtml = records.map((r, i) => `<tr>
+          <td>${i + 1}</td>
+          <td>${r.partner || '—'}</td>
+          <td style="font-weight:600;color:var(--navy);">${r.name || '—'}</td>
+          <td>${r.age || '—'}</td>
+          <td>${r.gender || '—'}</td>
+          <td>${r.district || '—'}</td>
+          <td>${r.village || '—'}</td>
+          <td>${r.valueChains.join(', ') || '—'}</td>
+          <td>${r.intervention || '—'}</td>
+          <td>${r.jobPathway || '—'}</td>
+        </tr>`).join('');
+      }
+
+      tableEl.innerHTML = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rowsHtml}</tbody>`;
+    }
+
+    function renderWEO(data) {
+      const categories = [
+        { key: 'primaryWEO',   label: WEO_LABELS.primaryWEO,   records: data.primaryWEO.records,   summary: data.primaryWEO.summary,   offline: data.primaryWEO.offline,   isSecondary: false },
+        { key: 'primaryYIW',   label: WEO_LABELS.primaryYIW,   records: data.primaryYIW.records,   summary: data.primaryYIW.summary,   offline: data.primaryYIW.offline,   isSecondary: false },
+        { key: 'secondaryWEO', label: WEO_LABELS.secondaryWEO, records: data.secondaryWEO.records, summary: data.secondaryWEO.summary, offline: data.secondaryWEO.offline, isSecondary: true  },
+        { key: 'secondaryYIW', label: WEO_LABELS.secondaryYIW, records: data.secondaryYIW.records, summary: data.secondaryYIW.summary, offline: data.secondaryYIW.offline, isSecondary: true  }
+      ];
+
+      // Overall totals
+      const totals = categories.reduce((acc, c) => {
+        acc.total  += c.summary.total;
+        acc.male    += c.summary.male;
+        acc.female  += c.summary.female;
+        return acc;
+      }, { total: 0, male: 0, female: 0 });
+
+      // --- KPI Cards (4 categories + 1 overall total) ---
+      const kpiEl = document.getElementById('weoKpis');
+      if (kpiEl) {
+        kpiEl.innerHTML = categories.map(c => {
+          const s = c.summary;
+          const tG = s.male + s.female;
+          const femPct = tG > 0 ? Math.round((s.female / tG) * 100) : 0;
+          const offlineBadge = c.offline ? ' <span class="badge badge-inactive" style="font-size:9px;">cached</span>' : '';
+          return `<div class="kpi-card">
+            <span class="icon">${WEO_ICONS[c.key]}</span>
+            <div class="value">${fmt(s.total)}</div>
+            <div class="label">${c.label}${offlineBadge}</div>
+            <div class="sub">♂ ${fmt(s.male)} · ♀ ${fmt(s.female)} · ${femPct}% F</div>
+          </div>`;
+        }).join('') + `<div class="kpi-card accent">
+          <span class="icon">📊</span>
+          <div class="value">${fmt(totals.total)}</div>
+          <div class="label">All WEO Participants</div>
+          <div class="sub">♂ ${fmt(totals.male)} · ♀ ${fmt(totals.female)} · ${(totals.male + totals.female) > 0 ? Math.round((totals.female / (totals.male + totals.female)) * 100) : 0}% F</div>
+        </div>`;
+      }
+
+      // --- Overall Gender Donut ---
+      const tG = totals.male + totals.female;
+      if (window.weoDonutInst) window.weoDonutInst.destroy();
+      const donutEl = document.getElementById('weoDonutChart');
+      if (donutEl) {
+        const donutCtx = donutEl.getContext('2d');
+        window.weoDonutInst = new Chart(donutCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Female', 'Male'],
+            datasets: [{
+              data: [totals.female, totals.male],
+              backgroundColor: ['#a8935a', '#0d2136'],
+              borderColor: '#ffffff',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: {
+              legend: { display: false },
+              tooltip: { backgroundColor: '#111e30', titleColor: '#a8935a', bodyColor: '#d3dce9' }
+            }
+          }
+        });
+        const donutLegEl = document.getElementById('weoDonutLegend');
+        if (donutLegEl) {
+          donutLegEl.innerHTML = [
+            { label: 'Female', color: '#a8935a', val: totals.female },
+            { label: 'Male',   color: '#0d2136', val: totals.male }
+          ].map(item => `<div><span class="legend-left"><span class="legend-dot" style="background:${item.color};"></span> ${item.label}</span> <span class="legend-right">${fmt(item.val)} <small>(${tG > 0 ? Math.round(item.val / tG * 100) : 0}%)</small></span></div>`).join('');
+        }
+      }
+
+      // --- Category Comparison Bar Chart (stacked male/female) ---
+      if (window.weoCatChartInst) window.weoCatChartInst.destroy();
+      const catEl = document.getElementById('weoCategoryChart');
+      if (catEl) {
+        const catCtx = catEl.getContext('2d');
+        window.weoCatChartInst = new Chart(catCtx, {
+          type: 'bar',
+          data: {
+            labels: categories.map(c => c.label),
+            datasets: [
+              { label: 'Male',   data: categories.map(c => c.summary.male),   backgroundColor: '#0d2136', borderRadius: 4 },
+              { label: 'Female', data: categories.map(c => c.summary.female), backgroundColor: '#a8935a', borderRadius: 4 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true, ticks: { color: '#d8d0c6', font: { size: 11 } }, grid: { display: false } },
+              y: { stacked: true, beginAtZero: true, ticks: { color: '#d8d0c6', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' } }
+            },
+            plugins: {
+              legend: { labels: { color: '#d8d0c6', font: { size: 11 } } },
+              tooltip: { backgroundColor: '#111e30', titleColor: '#a8935a', bodyColor: '#d3dce9' }
+            }
+          }
+        });
+      }
+
+      // --- District Distribution (all records combined) ---
+      const allRecords = categories.flatMap(c => c.records);
+      const districtCounts = {};
+      allRecords.forEach(r => {
+        if (!isBlank(r.district)) {
+          const d = r.district.trim();
+          districtCounts[d] = (districtCounts[d] || 0) + 1;
+        }
+      });
+      const sortedDistricts = Object.keys(districtCounts).sort((a, b) => districtCounts[b] - districtCounts[a]);
+
+      if (window.weoDistrictInst) window.weoDistrictInst.destroy();
+      const distEl = document.getElementById('weoDistrictChart');
+      if (distEl) {
+        // Give the chart enough vertical room when there are many districts
+        const distWrap = distEl.parentElement;
+        if (distWrap && sortedDistricts.length > 8) {
+          distWrap.style.maxHeight = Math.min(800, sortedDistricts.length * 32 + 40) + 'px';
+          distEl.style.maxHeight = (Math.min(800, sortedDistricts.length * 32 + 40) - 20) + 'px !important';
+        }
+        const distCtx = distEl.getContext('2d');
+        window.weoDistrictInst = new Chart(distCtx, {
+          type: 'bar',
+          data: {
+            labels: sortedDistricts,
+            datasets: [{
+              label: 'Participants',
+              data: sortedDistricts.map(d => districtCounts[d]),
+              backgroundColor: '#a8935a',
+              borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, ticks: { color: '#7a7a7a', stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+              y: { ticks: { color: '#7a7a7a', font: { size: 11 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // --- Value Chain Distribution ---
+      const vcCounts = {};
+      allRecords.forEach(r => {
+        r.valueChains.forEach(vc => {
+          const clean = vc.trim();
+          if (!isBlank(clean)) vcCounts[clean] = (vcCounts[clean] || 0) + 1;
+        });
+      });
+      const sortedVCs = Object.keys(vcCounts).sort((a, b) => vcCounts[b] - vcCounts[a]);
+
+      if (window.weoVCInst) window.weoVCInst.destroy();
+      const vcEl = document.getElementById('weoValueChainChart');
+      if (vcEl) {
+        const vcWrap = vcEl.parentElement;
+        if (vcWrap && sortedVCs.length > 8) {
+          vcWrap.style.maxHeight = Math.min(800, sortedVCs.length * 32 + 40) + 'px';
+          vcEl.style.maxHeight = (Math.min(800, sortedVCs.length * 32 + 40) - 20) + 'px !important';
+        }
+        const vcCtx = vcEl.getContext('2d');
+        window.weoVCInst = new Chart(vcCtx, {
+          type: 'bar',
+          data: {
+            labels: sortedVCs,
+            datasets: [{
+              label: 'Participants',
+              data: sortedVCs.map(v => vcCounts[v]),
+              backgroundColor: '#0d2136',
+              borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, ticks: { color: '#7a7a7a', stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+              y: { ticks: { color: '#7a7a7a', font: { size: 11 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // --- Detail Tables ---
+      renderWEOTable('weoTablePrimaryWEO',   data.primaryWEO.records,   false);
+      renderWEOTable('weoTablePrimaryYIW',   data.primaryYIW.records,   false);
+      renderWEOTable('weoTableSecondaryWEO', data.secondaryWEO.records, true);
+      renderWEOTable('weoTableSecondaryYIW', data.secondaryYIW.records, true);
+
+      const updatedEl = document.getElementById('weoUpdated');
+      if (updatedEl) updatedEl.textContent = `Last updated: ${new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'})}`;
+    }
+
+    async function loadWEOData() {
+      const statusEl = document.getElementById('weoStatus');
+      const kpiEl = document.getElementById('weoKpis');
+      if (statusEl) statusEl.textContent = 'Loading...';
+      if (kpiEl) kpiEl.innerHTML = '<div class="kpi-card" style="grid-column:1/-1;text-align:center; padding:2rem;"><div style="color:var(--gold); font-weight:600;">⏳ Loading WEO data...</div></div>';
+
+      try {
+        const [primaryWEO, primaryYIW, secondaryWEO, secondaryYIW] = await Promise.all([
+          fetchWEOCategory(WEO_CSV_URLS.primaryWEO,   'primaryWEO'),
+          fetchWEOCategory(WEO_CSV_URLS.primaryYIW,   'primaryYIW'),
+          fetchWEOCategory(WEO_CSV_URLS.secondaryWEO, 'secondaryWEO'),
+          fetchWEOCategory(WEO_CSV_URLS.secondaryYIW, 'secondaryYIW')
+        ]);
+        renderWEO({ primaryWEO, primaryYIW, secondaryWEO, secondaryYIW });
+        if (statusEl) statusEl.textContent = '✓ Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      } catch (e) {
+        console.error('WEO load failed:', e);
+        if (kpiEl) kpiEl.innerHTML = '<div class="kpi-card" style="grid-column:1/-1;text-align:center; padding:2rem; background:#fff; border:1px solid red;"><div style="color:red; font-weight:600;">Failed to load WEO data.</div></div>';
+        if (statusEl) statusEl.textContent = '⚠ Failed';
+      }
+    }
+
+    // Expose loader globally so showTab() can call it
+    window.loadWEOData = loadWEOData;
+
+    // =================================================================
+    // ============ END WEO TAB LOGIC ==================================
+    // =================================================================
+
     // PWA Install Logic
     let deferredPrompt;
     const installButton = document.getElementById('installButton');
@@ -950,7 +1450,11 @@
       }
     }
 
-    function manualRefresh() { loadDashboard(); }
+    function manualRefresh() {
+      loadDashboard();
+      // Also refresh WEO if it has been loaded before
+      if (window.weoLoaded) loadWEOData();
+    }
     
     window.addEventListener('DOMContentLoaded', () => {
       loadDashboard();
